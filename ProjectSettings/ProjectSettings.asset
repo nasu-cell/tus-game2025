@@ -4,7 +4,7 @@
 PlayerSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 28
-  productGUID: 327ec84620196dc46ae3698b753c0a1e
+  productGUID: c1f78ef24818ecf408f26feead3cb326
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
   AndroidEnableSustainedPerformanceMode: 0
@@ -873,14 +873,14 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: tus-2025-game
+  metroPackageName: tus-game2025
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: tus-2025-game
+  metroApplicationDescription: tus-game2025
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -954,7 +954,7 @@ PlayerSettings:
   cloudProjectId: 875b0e8e-2aeb-4d64-abdf-7ace6e63512d
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: tus-2025-game
+  projectName: Uploading tanks
   organizationId: nasu1218
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
