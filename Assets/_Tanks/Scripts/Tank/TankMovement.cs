@@ -47,6 +47,9 @@ namespace Tanks.Complete
         private float m_TurretTurnInputValue;        // 入力値（-1〜1）
         private string m_TurretTurnActionName = "TurretTurn"; // InputAction名
         private InputAction m_TurretTurnAction;      // InputActionの参照
+
+        [Tooltip("砲塔のHUD（照準UIなど）のTransformを指定")]
+        public Transform m_TurretHUDTransform;       // 🆕 HUD追従用
         // ===============================================================
 
         private void Awake()
@@ -56,11 +59,11 @@ namespace Tanks.Complete
             if (m_InputUser == null)
                 m_InputUser = gameObject.AddComponent<TankInputUser>();
 
-            // 🔹 砲塔TransformのNullチェック
+            // 🔹 Nullチェック
             if (m_TurretTransform == null)
-            {
                 Debug.LogWarning($"{name}: Turret Transform is not assigned!");
-            }
+            if (m_TurretHUDTransform == null)
+                Debug.LogWarning($"{name}: Turret HUD Transform is not assigned!");
         }
 
         private void OnEnable()
@@ -178,7 +181,7 @@ namespace Tanks.Complete
             m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
         }
 
-        // ===================== 🧠 新規メソッド：砲塔の回転 =====================
+        // ===================== 🧠 新規メソッド：砲塔＋HUDの回転 =====================
         private void TurretTurn()
         {
             if (m_TurretTransform == null) return; // 🔹砲塔がない場合はスキップ
@@ -186,8 +189,13 @@ namespace Tanks.Complete
             float turn = m_TurretTurnInputValue * m_TurretTurnSpeedValue * Time.deltaTime;
 
             // 🔸ローカル回転をY軸で回す（Quaternionの掛け算順序に注意）
+            m_TurretTransform.Rotate(0f, turn, 0f, Space.World);
             Quaternion rotation = Quaternion.Euler(0f, turn, 0f);
-            m_TurretTransform.localRotation *= rotation;
+            // 🆕 HUD（照準UI）も同じ角度で回転
+            if (m_TurretHUDTransform != null)
+            {
+                 m_TurretHUDTransform.localRotation *= rotation;
+            }
         }
         // =====================================================================
 
