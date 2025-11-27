@@ -1,53 +1,103 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using Tanks.Complete;  // GameManagerクラスを使うために必要
 
 public class CartridgeSpawner : MonoBehaviour
 {
-    [Header("Cartridge Settings")]
-    [Tooltip("砲弾カートリッジのプレハブ")]
-    public GameObject shellCartridge;
+    [Header("Cartridge Data Settings")]
+    [SerializeField] private CartridgeData shellCartridgeData;  // 砲弾データ
+    [SerializeField] private CartridgeData mineCartridgeData;   // 地雷データ
 
-    [Tooltip("砲弾カートリッジを生成する間隔（秒）")]
-    public float spawnInterval = 5f;
+    [Header("Spawn Area Settings")]
+    [Tooltip("カートリッジを生成する範囲")]
+    [SerializeField] private Vector3 spawnArea = new Vector3(10f, 0f, 10f);
 
-    [Tooltip("砲弾カートリッジを生成する範囲")]
-    public Vector3 spawnArea = new Vector3(10f, 0f, 10f); // xとzが範囲、yは固定
+    [Header("Game Manager Reference")]
+    [SerializeField] private GameManager gameManager; // GameManagerへの参照
+
+    private Coroutine spawnCoroutine; // コルーチン制御用
 
     private void Start()
     {
-        // コルーチンを開始
-        StartCoroutine(SpawnRoutine());
+        // GameManagerが指定されていなければ自動で探す
+        if (gameManager == null)
+        {
+            gameManager = FindAnyObjectByType<GameManager>(); // Unity 2023以降推奨
+        }
+
+        // GameManagerの状態変更イベントを購読
+        if (gameManager != null)
+        {
+            gameManager.OnGameStateChanged += HandleGameStateChanged;
+        }
+        else
+        {
+            Debug.LogError("GameManager not found in the scene!");
+        }
     }
 
-    // 砲弾カートリッジを生成するメソッド
-    private void SpawnCartridge()
+    private void OnDestroy()
     {
-        if (shellCartridge == null)
+        // イベント購読を解除
+        if (gameManager != null)
         {
-            Debug.LogWarning("ShellCartridge prefab is not assigned!");
+            gameManager.OnGameStateChanged -= HandleGameStateChanged;
+        }
+    }
+
+    // 🔹 ゲーム状態が変化した時に呼ばれる
+   private void HandleGameStateChanged(GameManager.GameLoopState newState)
+   {
+     // プレイ中（RoundPlaying）ならスポーンを開始
+     if (newState == GameManager.GameLoopState.RoundPlaying)
+     {
+         if (spawnCoroutine == null)
+         {
+             // 砲弾と地雷の両方の生成を開始
+             spawnCoroutine = StartCoroutine(SpawnRoutine(shellCartridgeData));
+             StartCoroutine(SpawnRoutine(mineCartridgeData));
+         }
+     }
+     else
+     {
+         // それ以外の状態では停止
+         if (spawnCoroutine != null)
+         {
+             StopCoroutine(spawnCoroutine);
+              spawnCoroutine = null;
+        }
+     }
+   }
+
+
+    // 🔹 カートリッジ生成コルーチン
+    private IEnumerator SpawnRoutine(CartridgeData cartridgeData)
+    {
+        while (true)
+        {
+            SpawnCartridge(cartridgeData);
+            yield return new WaitForSeconds(cartridgeData.spawnInterval);
+        }
+    }
+
+    // 🔹 指定されたCartridgeDataを元にカートリッジを生成
+    private void SpawnCartridge(CartridgeData cartridgeData)
+    {
+        if (cartridgeData == null || cartridgeData.prefab == null)
+        {
+            Debug.LogWarning("CartridgeDataまたはPrefabが設定されていません。");
             return;
         }
 
-        // spawnArea内でランダムな位置を生成
         Vector3 randomPos = new Vector3(
-            Random.Range(-spawnArea.x / 2f, spawnArea.x / 2f),
-            spawnArea.y, // y軸は固定
-            Random.Range(-spawnArea.z / 2f, spawnArea.z / 2f)
+            UnityEngine.Random.Range(-spawnArea.x / 2f, spawnArea.x / 2f),
+            spawnArea.y,
+            UnityEngine.Random.Range(-spawnArea.z / 2f, spawnArea.z / 2f)
         );
 
         Vector3 spawnPosition = transform.position + randomPos;
 
-        // プレハブを生成
-        Instantiate(shellCartridge, spawnPosition, Quaternion.identity);
-    }
-
-    // コルーチンで定期的に生成
-    private IEnumerator SpawnRoutine()
-    {
-        while (true)
-        {
-            SpawnCartridge();
-            yield return new WaitForSeconds(spawnInterval);
-        }
+        Instantiate(cartridgeData.prefab, spawnPosition, Quaternion.identity);
     }
 }

@@ -5,21 +5,30 @@ namespace Tanks.Complete
 {
     public class TankHealth : MonoBehaviour
     {
-        public float m_StartingHealth = 100f;               // The amount of health each tank starts with.
-        public Slider m_Slider;                             // The slider to represent how much health the tank currently has.
-        public Image m_FillImage;                           // The image component of the slider.
-        public Color m_FullHealthColor = Color.green;    // The color the health bar will be when on full health.
-        public Color m_ZeroHealthColor = Color.red;      // The color the health bar will be when on no health.
-        public GameObject m_ExplosionPrefab;                // A prefab that will be instantiated in Awake, then used whenever the tank dies.
-        [HideInInspector] public bool m_HasShield;          // Has the tank picked up a shield power up?
+        public float m_StartingHealth = 100f;               // The amount of health each tank starts with.
+        public Slider m_Slider;                             // The slider to represent how much health the tank currently has.
+        public Image m_FillImage;                           // The image component of the slider.
+        public Color m_FullHealthColor = Color.green;    // The color the health bar will be when on full health.
+        public Color m_ZeroHealthColor = Color.red;      // The color the health bar will be when on no health.
+        public GameObject m_ExplosionPrefab;                // A prefab that will be instantiated in Awake, then used whenever the tank dies.
+        [HideInInspector] public bool m_HasShield;          // Has the tank picked up a shield power up?
+
+        // ワームホール用: 無敵状態タイマー
+        private float m_InvincibilityTimer;
+        // ワームホール用: 戦車のレンダラー配列
+        private Renderer[] m_Renderers;
+
+        private AudioSource m_ExplosionAudio;               // The audio source to play when the tank explodes.
+        private ParticleSystem m_ExplosionParticles;        // The particle system the will play when the tank is destroyed.
+        private float m_CurrentHealth;                      // How much health the tank currently has.
+        private bool m_Dead;                                // Has the tank been reduced beyond zero health yet?
+        private float m_ShieldValue;                        // Percentage of reduced damage when the tank has a shield.
         
-        
-        private AudioSource m_ExplosionAudio;               // The audio source to play when the tank explodes.
-        private ParticleSystem m_ExplosionParticles;        // The particle system the will play when the tank is destroyed.
-        private float m_CurrentHealth;                      // How much health the tank currently has.
-        private bool m_Dead;                                // Has the tank been reduced beyond zero health yet?
-        private float m_ShieldValue;                        // Percentage of reduced damage when the tank has a shield.
-        private bool m_IsInvincible;                        // Is the tank invincible in this moment?
+        // 無敵状態かどうかの判定を行う bool 型プロパティ
+        public bool IsInvincible
+        {
+            get { return m_InvincibilityTimer > 0f; }
+        }
 
         private void Awake ()
         {
@@ -34,6 +43,9 @@ namespace Tanks.Complete
             
             // Set the slider max value to the max health the tank can have
             m_Slider.maxValue = m_StartingHealth;
+
+            // Renderer 配列の初期化 (自身の子オブジェクトを含む全ての Renderer を取得)
+            m_Renderers = GetComponentsInChildren<Renderer>(true);
         }
 
         private void OnDestroy()
@@ -49,17 +61,40 @@ namespace Tanks.Complete
             m_Dead = false;
             m_HasShield = false;
             m_ShieldValue = 0;
-            m_IsInvincible = false;
+            m_InvincibilityTimer = 0f; // タイマーをリセット
+
+            // すべての Renderer を有効にする（無敵状態でないことを保証）
+            SetRenderersEnabled(true);
 
             // Update the health slider's value and color.
             SetHealthUI();
         }
 
+        // m_InvincibilityTimer の減少と点滅処理
+        private void Update()
+        {
+            if (m_InvincibilityTimer > 0f)
+            {
+                // タイマーを減少させる
+                m_InvincibilityTimer -= Time.deltaTime;
+
+                // 無敵状態の最中は、戦車を点滅させる処理
+                // 0.1秒ごとに enabled を切り替える
+                bool isVisible = Mathf.FloorToInt(Time.time * 10f) % 2 == 0;
+                SetRenderersEnabled(isVisible);
+
+                // タイマーが0になったら点滅を停止し、Renderer を有効に戻す
+                if (m_InvincibilityTimer <= 0f)
+                {
+                    SetRenderersEnabled(true);
+                }
+            }
+        }
 
         public void TakeDamage (float amount)
         {
-            // Check if the tank is not invincible
-            if (!m_IsInvincible)
+            // 無敵状態かどうかを IsInvincible プロパティで判定
+            if (!IsInvincible)
             {
                 // Reduce current health by the amount of damage done.
                 m_CurrentHealth -= amount * (1 - m_ShieldValue);
@@ -72,6 +107,21 @@ namespace Tanks.Complete
                 {
                     OnDeath ();
                 }
+            }
+        }
+
+        // 無敵状態を発動させる ActivateInvincibility メソッド
+        public void ActivateInvincibility(float duration)
+        {
+            // 新しい無敵時間がタイマーより長い場合にのみ更新（より長い無敵時間を優先）
+            if (duration > m_InvincibilityTimer)
+            {
+                m_InvincibilityTimer = duration;
+            }
+            // タイマーがリセットされた場合、Rendererを有効にする（Updateで点滅が開始されるため）
+            if (m_Renderers.Length > 0 && !m_Renderers[0].enabled)
+            {
+                SetRenderersEnabled(true);
             }
         }
 
@@ -110,12 +160,18 @@ namespace Tanks.Complete
                 m_ShieldValue = 0;
             }
         }
-
-        public void ToggleInvincibility()
+        
+        // Renderer の有効/無効を一括で切り替えるヘルパーメソッド
+        private void SetRenderersEnabled(bool enabled)
         {
-            m_IsInvincible = !m_IsInvincible;
+            foreach (var renderer in m_Renderers)
+            {
+                if (renderer != null)
+                {
+                    renderer.enabled = enabled;
+                }
+            }
         }
-
 
         private void SetHealthUI ()
         {

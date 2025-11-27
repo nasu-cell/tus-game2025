@@ -824,6 +824,7 @@ Transform:
   - {fileID: 4385175497230667699}
   - {fileID: 2839801766645873369}
   - {fileID: 5280153709022511552}
+  - {fileID: 5191428750143420337}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &5489450
@@ -1125,6 +1126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Shell: {fileID: 6883780783857615611, guid: b20794314a7db4b4c8322780a44f8f43, type: 3}
+  m_SpecialShell: {fileID: 0}
   m_FireTransform: {fileID: 435794}
   m_AimSlider: {fileID: 11407922}
   m_ShootingAudio: {fileID: 8268710}
@@ -1137,11 +1139,11 @@ MonoBehaviour:
   m_MaxDamage: 100
   m_ExplosionForce: 50
   m_ExplosionRadius: 5
-  m_StartingShells: 10
-  m_MaxShells: 50
-  m_ShellsPerCartridge: 10
-  m_CurrentShells: 0
   m_InputUser: {fileID: 0}
+  m_WeaponStockData: {fileID: 9108036266954780293}
+  m_MineStockData: {fileID: 1795749763447503779}
+  m_Mine: {fileID: 5396751498167115472, guid: 7c5a3526b9ef7b04596f1940ce5e1b6b, type: 3}
+  m_SetMineButton: SetMine
 --- !u!114 &8577645068931744711
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1377,6 +1379,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5280153709022511552}
   m_LocalEulerAnglesHint: {x: -2.382, y: 0, z: 0}
+--- !u!1 &2711081776647877836
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5191428750143420337}
+  m_Layer: 0
+  m_Name: PlayerStockData
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5191428750143420337
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2711081776647877836}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.75792, y: 0, z: 2.76093}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 204669582687108896}
+  - {fileID: 8892479405249873564}
+  m_Father: {fileID: 446194}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4743225976403692245
 GameObject:
   m_ObjectHideFlags: 0
@@ -1410,6 +1445,102 @@ Transform:
   - {fileID: 22459830}
   m_Father: {fileID: 446194}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6506125226728054266
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 204669582687108896}
+  - component: {fileID: 9108036266954780293}
+  m_Layer: 0
+  m_Name: PlayerWeaponStockData
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &204669582687108896
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6506125226728054266}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5191428750143420337}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9108036266954780293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6506125226728054266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26a2b8829d3267a4191708505212da62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponStockData
+  Type: 0
+  m_InitialQuantity: 3
+  m_MaxCapacity: 10
+  m_ReplenishQuantity: 5
+--- !u!1 &7802268277032805974
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8892479405249873564}
+  - component: {fileID: 1795749763447503779}
+  m_Layer: 0
+  m_Name: 'PlayerMineStockData '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8892479405249873564
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802268277032805974}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5191428750143420337}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1795749763447503779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802268277032805974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26a2b8829d3267a4191708505212da62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponStockData
+  Type: 1
+  m_InitialQuantity: 2
+  m_MaxCapacity: 3
+  m_ReplenishQuantity: 1
 --- !u!1001 &1738840171618580762
 PrefabInstance:
   m_ObjectHideFlags: 0

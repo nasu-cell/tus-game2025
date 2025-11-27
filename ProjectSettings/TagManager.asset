@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - ShellCartridge
+  - Mine
+  - MineCartridge
+  - Shell
   layers:
   - Default
   - TransparentFX

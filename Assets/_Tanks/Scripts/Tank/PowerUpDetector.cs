@@ -98,17 +98,21 @@ namespace Tanks.Complete
         // Makes the tank invulnerable for an amount of time
         public void PowerUpInvincibility(float duration)
         {
-            StartCoroutine(ActivateInvincibility(duration));
-        }
-
-        private IEnumerator ActivateInvincibility(float duration)
-        {
             m_HasActivePowerUp = true;
             m_PowerUpHUD.SetActivePowerUp(PowerUp.PowerUpType.Invincibility, duration);
-            m_TankHealth.ToggleInvincibility();
+            
+            // 💡 修正点: TankHealthの新しいメソッド (ActivateInvincibility) を呼び出す
+            m_TankHealth.ActivateInvincibility(duration);
+            
+            // パワーアップ継続時間待機用のコルーチンを開始
+            StartCoroutine(WaitForPowerUpDuration(duration));
+        }
+        
+        // パワーアップが終了するまで待機する汎用コルーチン
+        private IEnumerator WaitForPowerUpDuration(float duration)
+        {
             yield return new WaitForSeconds(duration);
             m_HasActivePowerUp = false;
-            m_TankHealth.ToggleInvincibility();
         }
 
         // Equips the tank with a special shell that increases damage

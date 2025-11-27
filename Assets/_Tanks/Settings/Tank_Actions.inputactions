@@ -50,6 +50,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "SetMine",
+                    "type": "Button",
+                    "id": "d5f71071-6bba-483d-94e3-4d35488ed337",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -221,7 +230,7 @@
                 {
                     "name": "",
                     "id": "3364dd8b-160a-470b-aa56-b62215c05355",
-                    "path": "<Keyboard>/enter",
+                    "path": "<Keyboard>/semicolon",
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardRight",
@@ -336,6 +345,28 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9476f31d-4ea3-448f-8a1f-9907adf562c6",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KeyboardLeft",
+                    "action": "SetMine",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5a678f28-ddc0-466a-9a8e-f7e33460a380",
+                    "path": "<Keyboard>/slash",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KeyboardRight",
+                    "action": "SetMine",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using System;
 
 namespace Tanks.Complete
 {
     public class TankShooting : MonoBehaviour
     {
-        public Rigidbody m_Shell;
+        [Header("General Settings")]
+        public Rigidbody m_Shell;                     // 通常弾
+        public Rigidbody m_SpecialShell;              // 特殊弾
         public Transform m_FireTransform;
         public Slider m_AimSlider;
         public AudioSource m_ShootingAudio;
@@ -22,48 +25,52 @@ namespace Tanks.Complete
         public float m_ExplosionForce = 50f;
         public float m_ExplosionRadius = 5f;
 
-        [Header("Shell Stock Settings")]
-        [Tooltip("ゲーム開始時の砲弾数")]
-        public int m_StartingShells = 10;
-
-        [Tooltip("砲弾の最大所持数")]
-        public int m_MaxShells = 50;
-
-        [Tooltip("カートリッジを拾ったときの補充量")]
-        public int m_ShellsPerCartridge = 10;
-
-        [HideInInspector]
-        public int m_CurrentShells;  // 現在の砲弾所持数
-
-        [HideInInspector]
-        public TankInputUser m_InputUser;
-
-        public float CurrentChargeRatio =>
-            (m_CurrentLaunchForce - m_MinLaunchForce) / (m_MaxLaunchForce - m_MinLaunchForce);
-        public bool IsCharging => m_IsCharging;
+        [HideInInspector] public TankInputUser m_InputUser;
         public bool m_IsComputerControlled { get; set; } = false;
+
+        // 💡 追加: TankHealth への参照
+        private TankHealth m_TankHealth;
 
         private string m_FireButton;
         private float m_CurrentLaunchForce;
         private float m_ChargeSpeed;
         private bool m_Fired;
-        private bool m_HasSpecialShell;
-        private float m_SpecialShellMultiplier;
         private InputAction fireAction;
-        private bool m_IsCharging = false;
         private float m_BaseMinLaunchForce;
         private float m_ShotCooldownTimer;
+
+        // --- 特殊弾 ---
+        private bool m_UsingSpecialShell = false;
+        private float m_SpecialDamageMultiplier = 1f;
+        private float m_SpecialShellDuration = 0f;
+        private float m_SpecialShellTimer = 0f;
+
+        private bool m_ChargingForward = true;
+
+        // --- イベント ---
+        public event Action<int> OnShellStockChanged;     // 砲弾イベント
+        public event Action<int> OnMineStockChanged;      // 地雷イベント
+        public event Action OnMinePlaced;                 // 地雷設置イベント
+
+        // --- Weapon Data ---
+        [SerializeField] private WeaponStockData m_WeaponStockData;
+        public WeaponStockData WeaponStockData => m_WeaponStockData;
+
+        [SerializeField] private WeaponStockData m_MineStockData;
+        public WeaponStockData MineStockData => m_MineStockData;
+
+        [SerializeField] private GameObject m_Mine;
+        [SerializeField] private string m_SetMineButton = "SetMine";
+        private InputAction setMineAction;
 
         private void OnEnable()
         {
             m_CurrentLaunchForce = m_MinLaunchForce;
             m_BaseMinLaunchForce = m_MinLaunchForce;
-            m_AimSlider.value = m_BaseMinLaunchForce;
-            m_HasSpecialShell = false;
-            m_SpecialShellMultiplier = 1.0f;
 
             m_AimSlider.minValue = m_MinLaunchForce;
             m_AimSlider.maxValue = m_MaxLaunchForce;
+            m_AimSlider.value = m_MinLaunchForce;
         }
 
         private void Awake()
@@ -71,145 +78,178 @@ namespace Tanks.Complete
             m_InputUser = GetComponent<TankInputUser>();
             if (m_InputUser == null)
                 m_InputUser = gameObject.AddComponent<TankInputUser>();
+
+            // 💡 追加: TankHealth コンポーネントの参照を取得
+            m_TankHealth = GetComponent<TankHealth>();
+            if (m_TankHealth == null)
+                Debug.LogError($"{gameObject.name}: TankHealth コンポーネントが見つかりません。");
         }
 
         private void Start()
         {
+            // Fire Action setup
             m_FireButton = "Fire";
             fireAction = m_InputUser.ActionAsset.FindAction(m_FireButton);
             fireAction.Enable();
 
+            // Mine Action setup
+            m_SetMineButton = "SetMine";
+            setMineAction = m_InputUser.ActionAsset.FindAction(m_SetMineButton);
+            if (setMineAction != null)
+                setMineAction.Enable();
+            else
+                Debug.LogError($"{gameObject.name}: SetMine アクションが見つかりません");
+
             m_ChargeSpeed = (m_MaxLaunchForce - m_MinLaunchForce) / m_MaxChargeTime;
 
-            // 🔹 初期砲弾数を設定
-            m_CurrentShells = m_StartingShells;
+            // --- WeaponStockData 初期化 ---
+            if (m_WeaponStockData != null)
+            {
+                m_WeaponStockData.InitializeQuantity();
+                OnShellStockChanged?.Invoke(m_WeaponStockData.CurrentQuantity);
+            }
+            // --- MineStockData 初期化 ---
+            if (m_MineStockData != null)
+            {
+                m_MineStockData.InitializeQuantity();
+                OnMineStockChanged?.Invoke(m_MineStockData.CurrentQuantity);
+            }
         }
 
         private void Update()
         {
+            // --- 特殊弾タイマー ---
+            if (m_UsingSpecialShell && m_SpecialShellDuration > 0f)
+            {
+                m_SpecialShellTimer += Time.deltaTime;
+                if (m_SpecialShellTimer >= m_SpecialShellDuration)
+                {
+                    m_UsingSpecialShell = false;
+                    m_SpecialDamageMultiplier = 1f;
+                    Debug.Log($"{gameObject.name} の特殊弾効果が終了しました。");
+                }
+            }
+
             if (!m_IsComputerControlled)
+            {
                 HumanUpdate();
+                if (setMineAction != null && setMineAction.WasPerformedThisFrame())
+                    PlaceMine();
+            }
             else
+            {
                 ComputerUpdate();
-        }
-
-        public void StartCharging()
-        {
-            if (m_CurrentShells <= 0)
-                return; // 🔹 砲弾がない場合は発射できない
-
-            m_IsCharging = true;
-            m_Fired = false;
-            m_CurrentLaunchForce = m_MinLaunchForce;
-            m_ShootingAudio.clip = m_ChargingClip;
-            m_ShootingAudio.Play();
-        }
-
-        public void StopCharging()
-        {
-            if (m_IsCharging)
-            {
-                Fire();
-                m_IsCharging = false;
             }
         }
 
-        void ComputerUpdate()
-        {
-            // 砲弾が無い場合は発射できない
-            if (m_CurrentShells <= 0)
-                return;
-
-            m_AimSlider.value = m_BaseMinLaunchForce;
-
-            if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
-            {
-                m_CurrentLaunchForce = m_MaxLaunchForce;
-                Fire();
-            }
-            else if (m_IsCharging && !m_Fired)
-            {
-                m_CurrentLaunchForce += m_ChargeSpeed * Time.deltaTime;
-                m_AimSlider.value = m_CurrentLaunchForce;
-            }
-            else if (fireAction.WasReleasedThisFrame() && !m_Fired)
-            {
-                Fire();
-                m_IsCharging = false;
-            }
-        }
-
+        // ------------------- Human Update ---------------------
         void HumanUpdate()
         {
+            // クールダウンタイマーの減少は、無敵状態に関わらず継続させる
             if (m_ShotCooldownTimer > 0.0f)
                 m_ShotCooldownTimer -= Time.deltaTime;
-
-            // 砲弾が無い場合は何もしない
-            if (m_CurrentShells <= 0)
+            
+            // 💡 修正: 無敵状態（ワームホール通過中）なら、砲撃/チャージの入力を無視する
+            if (m_TankHealth != null && m_TankHealth.IsInvincible)
                 return;
 
-            m_AimSlider.value = m_BaseMinLaunchForce;
+            if (m_WeaponStockData.CurrentQuantity <= 0)
+                return;
 
-            if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
+            if (!m_Fired && fireAction.IsPressed())
             {
-                m_CurrentLaunchForce = m_MaxLaunchForce;
-                Fire();
+                if (m_ChargingForward)
+                {
+                    m_CurrentLaunchForce += m_ChargeSpeed * Time.deltaTime;
+                    if (m_CurrentLaunchForce >= m_MaxLaunchForce)
+                    {
+                        m_CurrentLaunchForce = m_MaxLaunchForce;
+                        m_ChargingForward = false;
+                    }
+                }
+                else
+                {
+                    m_CurrentLaunchForce -= m_ChargeSpeed * Time.deltaTime;
+                    if (m_CurrentLaunchForce <= m_MinLaunchForce)
+                    {
+                        m_CurrentLaunchForce = m_MinLaunchForce;
+                        m_ChargingForward = true;
+                    }
+                }
+
+                m_AimSlider.value = m_CurrentLaunchForce;
             }
-            else if (m_ShotCooldownTimer <= 0 && fireAction.WasPressedThisFrame())
+
+            if (fireAction.WasPressedThisFrame() && m_ShotCooldownTimer <= 0)
             {
                 m_Fired = false;
                 m_CurrentLaunchForce = m_MinLaunchForce;
+                m_ChargingForward = true;
+
                 m_ShootingAudio.clip = m_ChargingClip;
                 m_ShootingAudio.Play();
             }
-            else if (fireAction.IsPressed() && !m_Fired)
+
+            if (fireAction.WasReleasedThisFrame() && !m_Fired)
+                Fire();
+        }
+
+        // ------------------- AI Update ---------------------
+        void ComputerUpdate()
+        {
+            // 💡 追加: AIも無敵状態なら砲撃を試みない
+            if (m_TankHealth != null && m_TankHealth.IsInvincible)
+                return;
+
+            if (m_WeaponStockData.CurrentQuantity <= 0)
+                return;
+
+            m_AimSlider.value = m_BaseMinLaunchForce;
+
+            if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
             {
-                m_CurrentLaunchForce += m_ChargeSpeed * Time.deltaTime;
-                m_AimSlider.value = m_CurrentLaunchForce;
-            }
-            else if (fireAction.WasReleasedThisFrame() && !m_Fired)
-            {
+                m_CurrentLaunchForce = m_MaxLaunchForce;
                 Fire();
             }
         }
+        // =========================
+        // デバッグ用: 現在の砲弾数・地雷数をログに表示
+        // =========================
+        public void DebugPrintWeaponStocks()
+        {
+            string msg = $"{gameObject.name} 現在の武器ストック: " +
+                         $"Shells = {(m_WeaponStockData != null ? m_WeaponStockData.CurrentQuantity.ToString() : "null")}, " +
+                         $"Mines = {(m_MineStockData != null ? m_MineStockData.CurrentQuantity.ToString() : "null")}";
+            Debug.Log(msg);
+        }
 
+        // ------------------- Fire ---------------------
         private void Fire()
         {
-            if (m_CurrentShells <= 0)
-            {
-                Debug.Log("No shells left!");
+            // 念のため、Fireメソッド内でも無敵状態をチェック
+            if (m_TankHealth != null && m_TankHealth.IsInvincible)
                 return;
-            }
 
-            // 🔹 砲弾を1つ消費
-            m_CurrentShells--;
-            Debug.Log($"Shell fired! Remaining shells: {m_CurrentShells}");
+            if (m_WeaponStockData.CurrentQuantity <= 0)
+                return;
+
+            m_WeaponStockData.Use();
+            OnShellStockChanged?.Invoke(m_WeaponStockData.CurrentQuantity);
+
+            DebugPrintWeaponStocks();
 
             m_Fired = true;
 
-            Rigidbody shellInstance =
-                Instantiate(m_Shell, m_FireTransform.position, m_FireTransform.rotation) as Rigidbody;
+            Rigidbody shellPrefab = m_UsingSpecialShell && m_SpecialShell != null
+                ? m_SpecialShell
+                : m_Shell;
 
+            Rigidbody shellInstance = Instantiate(shellPrefab, m_FireTransform.position, m_FireTransform.rotation);
             shellInstance.linearVelocity = m_CurrentLaunchForce * m_FireTransform.forward;
 
-            ShellExplosion explosionData = shellInstance.GetComponent<ShellExplosion>();
-            explosionData.m_ExplosionForce = m_ExplosionForce;
-            explosionData.m_ExplosionRadius = m_ExplosionRadius;
-            explosionData.m_MaxDamage = m_MaxDamage;
-
-            if (m_HasSpecialShell)
-            {
-                explosionData.m_MaxDamage *= m_SpecialShellMultiplier;
-                m_HasSpecialShell = false;
-                m_SpecialShellMultiplier = 1f;
-                PowerUpDetector powerUpDetector = GetComponent<PowerUpDetector>();
-                if (powerUpDetector != null)
-                    powerUpDetector.m_HasActivePowerUp = false;
-
-                PowerUpHUD powerUpHUD = GetComponentInChildren<PowerUpHUD>();
-                if (powerUpHUD != null)
-                    powerUpHUD.DisableActiveHUD();
-            }
+            var explosion = shellInstance.GetComponent<ShellExplosion>();
+            if (explosion != null)
+                explosion.m_MaxDamage *= m_SpecialDamageMultiplier;
 
             m_ShootingAudio.clip = m_FireClip;
             m_ShootingAudio.Play();
@@ -218,54 +258,87 @@ namespace Tanks.Complete
             m_ShotCooldownTimer = m_ShotCooldown;
         }
 
-        // 🔹 砲弾を補充する
-        public void AddShells(int amount)
-        {
-            m_CurrentShells = Mathf.Min(m_CurrentShells + amount, m_MaxShells);
-            Debug.Log($"Shells added! Current: {m_CurrentShells}");
-        }
-
-        public void EquipSpecialShell(float damageMultiplier)
-        {
-            m_HasSpecialShell = true;
-            m_SpecialShellMultiplier = damageMultiplier;
-        }
-
-        public Vector3 GetProjectilePosition(float chargingLevel)
-        {
-            float chargeLevel = Mathf.Lerp(m_MinLaunchForce, m_MaxLaunchForce, chargingLevel);
-            Vector3 velocity = chargeLevel * m_FireTransform.forward;
-
-            float a = 0.5f * Physics.gravity.y;
-            float b = velocity.y;
-            float c = m_FireTransform.position.y;
-
-            float sqrtContent = b * b - 4 * a * c;
-            if (sqrtContent <= 0)
-                return m_FireTransform.position;
-
-            float answer1 = (-b + Mathf.Sqrt(sqrtContent)) / (2 * a);
-            float answer2 = (-b - Mathf.Sqrt(sqrtContent)) / (2 * a);
-            float answer = answer1 > 0 ? answer1 : answer2;
-
-            Vector3 position = m_FireTransform.position +
-                               new Vector3(velocity.x, 0, velocity.z) * answer;
-            position.y = 0;
-
-            return position;
-        }
-
+        // ------------------- Collision ---------------------
         private void OnCollisionEnter(Collision collision)
         {
-            // 衝突したオブジェクトのタグが "ShellCartridge" の場合
             if (collision.gameObject.CompareTag("ShellCartridge"))
             {
-                // 砲弾を補充
-                AddShells(m_ShellsPerCartridge);
+                m_WeaponStockData.Replenish();
+                OnShellStockChanged?.Invoke(m_WeaponStockData.CurrentQuantity);
+                DebugPrintWeaponStocks();
+                Destroy(collision.gameObject);
+                return;
+            }
 
-                // カートリッジオブジェクトを削除
+            if (collision.gameObject.CompareTag("MineCartridge"))
+            {
+                m_MineStockData.Replenish();
+                OnMineStockChanged?.Invoke(m_MineStockData.CurrentQuantity);
+                DebugPrintWeaponStocks();
                 Destroy(collision.gameObject);
             }
+        }
+
+        // ------------------- Mine Placement ---------------------
+        private void PlaceMine()
+        {
+            // 💡 修正: 無敵状態（ワームホール通過中）なら地雷を設置できない
+            if (m_TankHealth != null && m_TankHealth.IsInvincible)
+            {
+                // Debug.Log($"{gameObject.name}: ワームホール通過中のため、地雷を設置できません。");
+                return; 
+            }
+            
+            if (m_MineStockData == null || m_Mine == null || m_MineStockData.CurrentQuantity <= 0)
+                return;
+
+            m_MineStockData.Use();
+            OnMineStockChanged?.Invoke(m_MineStockData.CurrentQuantity);
+
+            DebugPrintWeaponStocks();
+            Instantiate(m_Mine, transform.position, Quaternion.identity);
+            OnMinePlaced?.Invoke();
+
+            Debug.Log($"{gameObject.name} が地雷を設置しました");
+        }
+
+        // --- AI 支援 ---
+        public bool IsCharging => !m_Fired && fireAction.IsPressed();
+
+        public float CurrentChargeRatio =>
+            Mathf.InverseLerp(m_MinLaunchForce, m_MaxLaunchForce, m_CurrentLaunchForce);
+
+        public Vector3 GetProjectilePosition(float chargeRatio = 1f)
+        {
+            float launchForce = Mathf.Lerp(m_MinLaunchForce, m_MaxLaunchForce, chargeRatio);
+            return m_FireTransform.position + m_FireTransform.forward * launchForce * 0.1f;
+        }
+
+        public void StartCharging()
+        {
+            // 💡 追加: AI支援メソッドでも無敵状態をチェック
+            if (m_TankHealth != null && m_TankHealth.IsInvincible) return;
+            
+            if (m_WeaponStockData.CurrentQuantity <= 0) return;
+
+            m_Fired = false;
+            m_CurrentLaunchForce = m_MinLaunchForce;
+            m_ChargingForward = true;
+
+            m_ShootingAudio.clip = m_ChargingClip;
+            m_ShootingAudio.Play();
+        }
+
+        public void StopCharging() => Fire();
+
+        public void EquipSpecialShell(float damageMultiplier, float duration = 0f)
+        {
+            m_UsingSpecialShell = true;
+            m_SpecialDamageMultiplier = damageMultiplier;
+            m_SpecialShellDuration = duration;
+            m_SpecialShellTimer = 0f;
+
+            Debug.Log($"{gameObject.name} が特殊弾を装備しました（倍率: {damageMultiplier}, 時間: {duration}秒）");
         }
     }
 }
