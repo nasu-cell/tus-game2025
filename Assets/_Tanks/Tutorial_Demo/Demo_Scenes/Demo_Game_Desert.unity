@@ -119,6 +119,78 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &45470198
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 45470199}
+  - component: {fileID: 45470201}
+  - component: {fileID: 45470200}
+  m_Layer: 5
+  m_Name: MinimapImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &45470199
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 45470198}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 2.5, y: 2.5, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 816932960}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 1000, y: -200}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &45470200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 45470198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 8400000, guid: a630ebfb474df83449eb4ce55ca14b0d, type: 2}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &45470201
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 45470198}
+  m_CullTransparentMesh: 1
 --- !u!1001 &142521361
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2186,7 +2258,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -512.8808
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2206,11 +2278,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -180
+      value: -270
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 180
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -2648,6 +2720,9 @@ MonoBehaviour:
   Player1Stock: {fileID: 842845616}
   Player2Stock: {fileID: 1638410510}
   gameManager: {fileID: 1304999365}
+  player1Camera: {fileID: 0}
+  player2Camera: {fileID: 0}
+  minimapImageRoot: {fileID: 45470198}
 --- !u!114 &816932957
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2725,6 +2800,7 @@ RectTransform:
   m_Children:
   - {fileID: 842845621}
   - {fileID: 1638410515}
+  - {fileID: 45470199}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4817,11 +4893,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 500
+      value: 550
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 180
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 5339962999966568817, guid: a1c7221debb865446a527d91809b0d0e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

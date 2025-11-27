@@ -120,7 +120,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 48
+  controlID: 155
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -351,7 +351,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/_Tanks/Tutorial_Demo/Demo_Prefabs/Demo_Tanks
+    - Assets/_Tanks/Scripts/Managers
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -361,16 +361,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 49
   m_LastFolders:
-  - Assets/_Tanks/Tutorial_Demo/Demo_Prefabs/Demo_Tanks
+  - Assets/_Tanks/Scripts/Managers
   m_LastFoldersGridSize: 49
   m_LastProjectPath: C:\Users\shii1\UnityProject\tus-game2025
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 264.66663}
-    m_SelectedIDs: 84fa0000
-    m_LastClickedID: 64132
-    m_ExpandedIDs: 0000000078c8000070c90000a4c90000a8c90000aac90000b0c900007afa0000a2b8030000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 79}
+    m_SelectedIDs: 62d80000
+    m_LastClickedID: 55394
+    m_ExpandedIDs: 00000000a6c800009ec90000d4c90000d6c90000dec9000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -399,7 +399,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: aceb0000
     m_LastClickedID: 60332
-    m_ExpandedIDs: 0000000078c80000
+    m_ExpandedIDs: 00000000a6c80000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -994,9 +994,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: -24.341114, y: 1.8064156, z: 39.722878}
+    m_Target: {x: 1000, y: 451.5, z: 0}
     speed: 2
-    m_Value: {x: -24.341114, y: 1.8064156, z: 39.722878}
+    m_Value: {x: 1000, y: 451.5, z: 0}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1046,9 +1046,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: -0.20229045, y: 0.03240592, z: -0.0066998675, w: -0.9787664}
   m_Size:
-    m_Target: 70.399185
+    m_Target: 123.49601
     speed: 2
-    m_Value: 70.399185
+    m_Value: 123.49601
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1222,20 +1222,20 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 28af0000
-      m_LastClickedID: 44840
-      m_ExpandedIDs: 5a0bfcff90f5ffffecfaffff58af0000
+      m_SelectedIDs: 34af0000
+      m_LastClickedID: 44852
+      m_ExpandedIDs: 4c13ffff9014ffffce31ffff1233ffffb643fffff851ffffba5fffffecfaffffe4ae000004af0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
-        m_Name: WormHoleB2
-        m_OriginalName: WormHoleB2
+        m_Name: MinimapImage
+        m_OriginalName: MinimapImage
         m_EditFieldRect:
           serializedVersion: 2
           x: 0
           y: 0
           width: 0
           height: 0
-        m_UserData: -259438
+        m_UserData: -32392
         m_IsWaitingForDelay: 0
         m_IsRenaming: 0
         m_OriginalEventType: 0

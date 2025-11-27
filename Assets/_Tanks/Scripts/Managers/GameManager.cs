@@ -365,25 +365,30 @@ namespace Tanks.Complete
             return null;
         }
 
+        // GameManager.cs - EndMessage() メソッド
+
         private string EndMessage()
         {
             string message = "DRAW!";
 
             // ラウンド勝者の表示
             if (m_RoundWinner != null)
-                message = $"PLAYER {m_RoundWinner.ControlIndex} WINS THE ROUND!";
+                // 💡 修正: ControlIndex ではなく m_PlayerNumber を使用
+                message = $"PLAYER {m_RoundWinner.m_PlayerNumber} WINS THE ROUND!";
 
             message += "\n\n\n\n";
 
             // 全プレイヤーの勝利数表示
             for (int i = 0; i < m_PlayerCount; i++)
             {
-                message += $"PLAYER {m_SpawnPoints[i].ControlIndex}: {m_SpawnPoints[i].m_Wins} WINS\n";
+                // 💡 修正: ControlIndex ではなく m_PlayerNumber を使用
+                message += $"PLAYER {m_SpawnPoints[i].m_PlayerNumber}: {m_SpawnPoints[i].m_Wins} WINS\n";
             }
 
             // ゲーム勝者の表示
             if (m_GameWinner != null)
-                message = $"PLAYER {m_GameWinner.ControlIndex} WINS THE GAME!";
+                // 💡 修正: ControlIndex ではなく m_PlayerNumber を使用
+                message = $"PLAYER {m_GameWinner.m_PlayerNumber} WINS THE GAME!";
 
             return message;
         }

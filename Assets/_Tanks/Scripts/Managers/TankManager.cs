@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.Users;
+using Camera = UnityEngine.Camera; // Cameraクラスの衝突回避のため明示的に指定
 
 namespace Tanks.Complete
 {
@@ -25,10 +26,13 @@ namespace Tanks.Complete
         private InputUser m_InputUser;
         private GameManager m_GameManager;
 
+        // 💡 修正点: イベントの引数に ControlIndex (int) を追加
+        public event Action<int, Camera> OnMinimapCameraSpawned; 
+
         // =========================
         // MODIFIED: 武器ストックイベントに WeaponType を追加
         // =========================
-        public event Action<int, WeaponType, WeaponStockData> OnWeaponStockChangedEvent;  // MODIFIED
+        public event Action<int, WeaponType, WeaponStockData> OnWeaponStockChangedEvent; 
 
         // 地雷設置イベント（そのまま）
         public event Action<TankManager> OnMinePlaced;
@@ -75,6 +79,15 @@ namespace Tanks.Complete
                         renderer.materials[j].color = m_PlayerColor;
                 }
             }
+            
+            // 💡 修正点: スポーン時に MinimapCamera を取得し、ControlIndex と共にイベントで通知する
+            Camera minimapCam = m_Instance.GetComponentInChildren<Camera>(true);
+            
+            if (minimapCam != null)
+            {
+                // 💡 修正: ControlIndex を引数に追加
+                OnMinimapCameraSpawned?.Invoke(ControlIndex, minimapCam); 
+            }
 
             // =========================
             // TankShooting のイベント登録
@@ -84,14 +97,14 @@ namespace Tanks.Complete
             m_Shooting.OnShellStockChanged += (shellCount) =>
             {
                 // MODIFIED: WeaponType を追加
-                OnWeaponStockChangedEvent?.Invoke(ControlIndex, WeaponType.Shell, m_Shooting.WeaponStockData); // MODIFIED
+                OnWeaponStockChangedEvent?.Invoke(ControlIndex, WeaponType.Shell, m_Shooting.WeaponStockData);
             };
 
             // 🔴 地雷の所持数が変わったとき
             m_Shooting.OnMineStockChanged += (mineCount) =>
             {
                 // MODIFIED: WeaponType を追加
-                OnWeaponStockChangedEvent?.Invoke(ControlIndex, WeaponType.Mine, m_Shooting.MineStockData); // MODIFIED
+                OnWeaponStockChangedEvent?.Invoke(ControlIndex, WeaponType.Mine, m_Shooting.MineStockData);
             };
 
             // 地雷設置時のイベント
