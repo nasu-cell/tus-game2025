@@ -70,8 +70,6 @@ public class FPSDisplay : MonoBehaviour
         {
             lowestFps = Mathf.Infinity; // Round開始時にリセット
         }
-
-        Debug.Log($"[FPSDisplay] 状態変化: {newState}, 表示中: {isActive}");
     }
 
     // ===============================

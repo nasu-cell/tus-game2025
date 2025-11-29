@@ -1,10 +1,16 @@
-﻿using UnityEngine;
+﻿using System; // Actionデリゲートを使用するために必要
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Tanks.Complete
 {
     public class TankHealth : MonoBehaviour
     {
+        // ==============================
+        // 💡 修正点 1: HPの変化を受け取るイベントを追加 (正規化されたHPを引数とする)
+        // ==============================
+        public event Action<float> OnHealthChanged;
+        
         public float m_StartingHealth = 100f;               // The amount of health each tank starts with.
         public Slider m_Slider;                             // The slider to represent how much health the tank currently has.
         public Image m_FillImage;                           // The image component of the slider.
@@ -67,6 +73,7 @@ namespace Tanks.Complete
             SetRenderersEnabled(true);
 
             // Update the health slider's value and color.
+            // 💡 修正: HPリセット時にUI更新とイベント発火
             SetHealthUI();
         }
 
@@ -100,6 +107,7 @@ namespace Tanks.Complete
                 m_CurrentHealth -= amount * (1 - m_ShieldValue);
 
                 // Change the UI elements appropriately.
+                // 💡 修正: HP変更が発生したのでUI更新とイベント発火
                 SetHealthUI ();
 
                 // If the current health is at or below zero and it has not yet been registered, call OnDeath.
@@ -128,6 +136,8 @@ namespace Tanks.Complete
 
         public void IncreaseHealth(float amount)
         {
+            float previousHealth = m_CurrentHealth; // HPが実際に増加したか判定するため
+
             // Check if adding the amount would keep the health within the maximum limit
             if (m_CurrentHealth + amount <= m_StartingHealth)
             {
@@ -139,9 +149,14 @@ namespace Tanks.Complete
                 // If the new health exceeds the starting health, set it at the maximum
                 m_CurrentHealth = m_StartingHealth;
             }
-
-            // Change the UI elements appropriately.
-            SetHealthUI();
+            
+            // HPが実際に変化した場合のみUIとイベントを更新
+            if (m_CurrentHealth != previousHealth)
+            {
+                // Change the UI elements appropriately.
+                // 💡 修正: HP変更が発生したのでUI更新とイベント発火
+                SetHealthUI();
+            }
         }
 
 
@@ -179,7 +194,13 @@ namespace Tanks.Complete
             m_Slider.value = m_CurrentHealth;
 
             // Interpolate the color of the bar between the choosen colours based on the current percentage of the starting health.
-            m_FillImage.color = Color.Lerp (m_ZeroHealthColor, m_FullHealthColor, m_CurrentHealth / m_StartingHealth);
+            float healthRatio = m_CurrentHealth / m_StartingHealth;
+            m_FillImage.color = Color.Lerp (m_ZeroHealthColor, m_FullHealthColor, healthRatio);
+
+            // ==============================
+            // 💡 修正点 2: HPの変化イベントを発火させる
+            // ==============================
+            OnHealthChanged?.Invoke(healthRatio);
         }
 
 

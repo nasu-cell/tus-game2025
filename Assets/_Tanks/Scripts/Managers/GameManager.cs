@@ -114,6 +114,9 @@ namespace Tanks.Complete
 
         public void StartGame(PlayerData[] playerData)
         {
+            // ControlIndex の昇順で配列をソートする
+            // (i.e. ControlIndex 1, 2, 3... の順になるように並べ替える)
+            Array.Sort(playerData, (a, b) => a.ControlIndex.CompareTo(b.ControlIndex));
             m_TankData = playerData;
             m_PlayerCount = m_TankData.Length;
             ChangeGameState(GameState.Game);
@@ -219,24 +222,15 @@ namespace Tanks.Complete
                         // これにより、rotOffsetAdjustment が (180, Y, 0) となる
                         rotOffsetAdjustment.x = 180f;
                         rotOffsetAdjustment.y = 360f;
-                        Debug.Log($"[TPS Camera Rot Adjust] {turretName} にはX軸回転補正 180度を適用します。");
                     }
-
-                    Debug.Log($"[TPS Camera Target] ターゲットを砲塔に設定しました。オブジェクト名: {turretName}. 最終補正値: {rotOffsetAdjustment}");
+                    // TPSCameraControl のターゲットと回転オフセットを更新
+                    m_TPSCameraControl.SetTarget(targetTransform);
+                    m_TPSCameraControl.AdjustRotOffset(rotOffsetAdjustment);
                 }
                 else
                 {
-                    // 砲塔が見つからない場合は戦車本体がターゲット
-                    Debug.Log($"[TPS Camera Target] 砲塔が見つからなかったため、ターゲットを戦車本体に設定しました。オブジェクト名: {playerTankInstance.name}");
+                    Debug.LogError("[GameManager] プレイヤー1の戦車が見つかりませんでした。");
                 }
-
-                // TPSCameraControl のターゲットと回転オフセットを更新
-                m_TPSCameraControl.SetTarget(targetTransform);
-                m_TPSCameraControl.AdjustRotOffset(rotOffsetAdjustment);
-            }
-            else
-            {
-                Debug.LogError("[GameManager] プレイヤー1の戦車が見つかりませんでした。");
             }
         }
 

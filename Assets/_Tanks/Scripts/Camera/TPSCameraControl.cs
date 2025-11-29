@@ -35,8 +35,6 @@ namespace Tanks.Complete
 
                 // GameManagerに自身のインスタンスを登録させる
                 gameManager.m_TPSCameraControl = this;
-
-                Debug.Log("TPS Camera: GameManagerイベントに登録完了 & 自身を登録。");
             }
             else
             {
@@ -83,7 +81,6 @@ namespace Tanks.Complete
         {
             // ターゲットのローカル回転との差分を吸収するため、rotOffsetから調整値を引く
             rotOffset -= adjustment;
-            Debug.Log($"TPS Camera: rotOffset adjusted by {adjustment}. New rotOffset: {rotOffset}");
         }
         // GameManagerから呼ばれる、初期位置設定用メソッド (RoundStartingから呼ばれる想定)
         public void SetStartPositionAndRotation()
@@ -100,8 +97,6 @@ namespace Tanks.Complete
             // 回転を瞬時に設定
             Quaternion desiredRotation = Quaternion.Euler(rotOffset);
             transform.rotation = target.rotation * desiredRotation;
-
-            Debug.Log("TPS Camera: 初期位置と回転を設定しました。");
         }
 
         // ==========================
@@ -113,12 +108,10 @@ namespace Tanks.Complete
             if (newState == GameManager.GameLoopState.RoundPlaying)
             {
                 isRoundPlaying = true;
-                Debug.Log("TPS Camera: Round Playing State Activated.");
             }
             else
             {
                 isRoundPlaying = false;
-                Debug.Log($"TPS Camera: Round Playing State Deactivated. (Current: {newState})");
             }
         }
     }

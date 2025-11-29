@@ -120,7 +120,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 155
+  controlID: 16
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -193,8 +193,8 @@ MonoBehaviour:
     y: 472
     width: 806.6667
     height: 448
-  m_MinSize: {x: 201, y: 226}
-  m_MaxSize: {x: 4001, y: 4026}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 15}
   m_Panes:
   - {fileID: 15}
@@ -351,7 +351,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/_Tanks/Scripts/Managers
+    - Assets/_Tanks/Prefabs/HP
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -361,16 +361,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 49
   m_LastFolders:
-  - Assets/_Tanks/Scripts/Managers
+  - Assets/_Tanks/Prefabs/HP
   m_LastFoldersGridSize: 49
   m_LastProjectPath: C:\Users\shii1\UnityProject\tus-game2025
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 79}
-    m_SelectedIDs: 62d80000
-    m_LastClickedID: 55394
-    m_ExpandedIDs: 00000000a6c800009ec90000d4c90000d6c90000dec9000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 95}
+    m_SelectedIDs: b2cc0000
+    m_LastClickedID: 52402
+    m_ExpandedIDs: 00000000e2c80000dac9000012ca000014ca000018ca000030ca0000dccb00002ee7000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -399,7 +399,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: aceb0000
     m_LastClickedID: 60332
-    m_ExpandedIDs: 00000000a6c80000
+    m_ExpandedIDs: 00000000e2c80000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -428,7 +428,7 @@ MonoBehaviour:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
     m_HadKeyboardFocusLastEvent: 1
-    m_ExpandedInstanceIDs: 
+    m_ExpandedInstanceIDs: d6cb0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -994,9 +994,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 1000, y: 451.5, z: 0}
+    m_Target: {x: 8.335236, y: 14.119767, z: 3.5957968}
     speed: 2
-    m_Value: {x: 1000, y: 451.5, z: 0}
+    m_Value: {x: 8.335236, y: 14.119767, z: 3.5957968}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1042,13 +1042,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.20229279, y: 0.032406297, z: -0.006699945, w: -0.9787777}
+    m_Target: {x: -0.15667377, y: 0.22989729, z: -0.037531234, w: -0.959801}
     speed: 2
-    m_Value: {x: -0.20229045, y: 0.03240592, z: -0.0066998675, w: -0.9787664}
+    m_Value: {x: -0.15571184, y: 0.22993171, z: -0.037300814, w: -0.9599447}
   m_Size:
-    m_Target: 123.49601
+    m_Target: 10
     speed: 2
-    m_Value: 123.49601
+    m_Value: 10
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1148,8 +1148,8 @@ MonoBehaviour:
     m_VAllowExceedBaseRangeMin: 1
     m_VAllowExceedBaseRangeMax: 1
     m_ScaleWithWindow: 0
-    m_HSlider: 0
-    m_VSlider: 0
+    m_HSlider: 1
+    m_VSlider: 1
     m_IgnoreScrollWheelUntilClicked: 0
     m_EnableMouseInput: 1
     m_EnableSliderZoomHorizontal: 0
@@ -1162,18 +1162,18 @@ MonoBehaviour:
       y: 21
       width: 805.6667
       height: 401
-    m_Scale: {x: 1, y: 1}
-    m_Translation: {x: 402.83334, y: 200.5}
+    m_Scale: {x: 1.0599452, y: 1.0599452}
+    m_Translation: {x: 398.12762, y: 206.66438}
     m_MarginLeft: 0
     m_MarginRight: 0
     m_MarginTop: 0
     m_MarginBottom: 0
     m_LastShownAreaInsideMargins:
       serializedVersion: 2
-      x: -402.83334
-      y: -200.5
-      width: 805.6667
-      height: 401
+      x: -375.6115
+      y: -194.97647
+      width: 760.1022
+      height: 378.32144
     m_MinimalGUI: 1
   m_defaultScale: 1
   m_LastWindowPixelSize: {x: 1208.5, y: 633}
@@ -1221,24 +1221,24 @@ MonoBehaviour:
     m_OverlaysVisible: 1
   m_SceneHierarchy:
     m_TreeViewState:
-      scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 34af0000
-      m_LastClickedID: 44852
-      m_ExpandedIDs: 4c13ffff9014ffffce31ffff1233ffffb643fffff851ffffba5fffffecfaffffe4ae000004af0000
+      scrollPos: {x: 0, y: 4.3333435}
+      m_SelectedIDs: 3eaf0000
+      m_LastClickedID: 44862
+      m_ExpandedIDs: 3cd9feff42d9feff4cd9feff3ceffeff42effeff4ceffeff9afbfeffbafbfeffa269ffff68bdffff6ebdffff78bdffff9adbffffbadbffff4adcffffecfaffffeeae000002af0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
-        m_Name: MinimapImage
-        m_OriginalName: MinimapImage
+        m_Name: 
+        m_OriginalName: 
         m_EditFieldRect:
           serializedVersion: 2
           x: 0
           y: 0
           width: 0
           height: 0
-        m_UserData: -32392
+        m_UserData: 0
         m_IsWaitingForDelay: 0
         m_IsRenaming: 0
-        m_OriginalEventType: 0
+        m_OriginalEventType: 11
         m_IsRenamingFilename: 0
         m_TrimLeadingAndTrailingWhitespace: 0
         m_ClientGUIView: {fileID: 10}

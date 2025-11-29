@@ -5,18 +5,27 @@ using Camera = UnityEngine.Camera; // UnityEngine.Camera を明示的に指定
 
 public class HUDManager : MonoBehaviour
 {
+    // 武器在庫表示
     [SerializeField] private GameObject Player1Stock;
     [SerializeField] private GameObject Player2Stock;
     [SerializeField] private GameManager gameManager;
+    
+    // 💡 追加: HP表示
+    [Header("HP Display")]
+    [SerializeField] private GameObject player1HP; 
+    [SerializeField] private GameObject player2HP; 
 
+    // ミニマップ設定
     [Header("Minimap Settings")]
     [SerializeField] private Camera player1Camera; 
-    // 💡 追加: プレイヤー2用のカメラフィールド
     [SerializeField] private Camera player2Camera; 
     [SerializeField] private GameObject minimapImageRoot; 
 
     private PlayerStock player1StockComponent;
     private PlayerStock player2StockComponent;
+    // 💡 追加: PlayerHP コンポーネントへの参照
+    private PlayerHP player1HPComponent;
+    private PlayerHP player2HPComponent;
 
     private void Start()
     {
@@ -56,12 +65,15 @@ public class HUDManager : MonoBehaviour
         if (Player1Stock != null) Player1Stock.SetActive(false);
         if (Player2Stock != null) Player2Stock.SetActive(false);
         
-        // 💡 修正点: MinimapImage のルートオブジェクトも非アクティブ化
+        // 💡 追加: HP表示を最初非表示
+        if (player1HP != null) player1HP.SetActive(false);
+        if (player2HP != null) player2HP.SetActive(false);
+        
+        // MinimapImage のルートオブジェクトも非アクティブ化
         if (minimapImageRoot != null) minimapImageRoot.SetActive(false);
 
         // カメラをデフォルトで無効化
         if (player1Camera != null) player1Camera.gameObject.SetActive(false);
-        // 💡 追加: プレイヤー2のカメラもデフォルトで無効化
         if (player2Camera != null) player2Camera.gameObject.SetActive(false);
 
 
@@ -71,6 +83,12 @@ public class HUDManager : MonoBehaviour
         if (Player2Stock != null)
             player2StockComponent = Player2Stock.GetComponent<PlayerStock>();
 
+        // 💡 追加: PlayerHPコンポーネント取得
+        if (player1HP != null)
+            player1HPComponent = player1HP.GetComponent<PlayerHP>();
+        if (player2HP != null)
+            player2HPComponent = player2HP.GetComponent<PlayerHP>();
+            
         // GameManager購読（イベント購読はゲームマネージャーが存在する場合のみ）
         if (gameManager != null)
         {
@@ -80,10 +98,13 @@ public class HUDManager : MonoBehaviour
             {
                 if (tank != null)
                 {
-                    // MODIFIED: TankManager のイベント購読
+                    // MODIFIED: TankManager のイベント購読 (武器在庫)
                     tank.OnWeaponStockChangedEvent += HandleWeaponStockChanged; 
                     
-                    // 💡 修正: TankManager のカメラスポーンイベントを購読 (引数に ControlIndex を含む)
+                    // 💡 追加: TankManager のイベント購読 (HP変更)
+                    tank.OnHealthChanged += HandlePlayerHPChanged;
+                    
+                    // 修正: TankManager のカメラスポーンイベントを購読
                     tank.OnMinimapCameraSpawned += HandleMinimapCameraSpawned;
                 }
             }
@@ -107,14 +128,37 @@ public class HUDManager : MonoBehaviour
                     // MODIFIED: 購読解除
                     tank.OnWeaponStockChangedEvent -= HandleWeaponStockChanged; 
                     
-                    // 💡 修正: 購読解除
+                    // 💡 追加: 購読解除 (HP変更)
+                    tank.OnHealthChanged -= HandlePlayerHPChanged;
+                    
+                    // 修正: 購読解除
                     tank.OnMinimapCameraSpawned -= HandleMinimapCameraSpawned;
                 }
             }
         }
     }
 
-    // 💡 修正/追加: カメラ取得用のハンドラメソッド (ControlIndex で振り分け)
+    // 💡 追加: HP変更ハンドラメソッド
+    private void HandlePlayerHPChanged(int playerNumber, float normalizedHealth)
+    {
+        // プレイヤー番号に基づき、ターゲットの PlayerHP コンポーネントを選択
+        // playerNumber は TankManager で 1, 2, 3... と設定されている
+        if (playerNumber == 1 && player1HPComponent != null)
+        {
+            // UpdateHPSlider メソッドを呼び出し、正規化されたHP値を渡す
+            player1HPComponent.UpdateHPSlider(normalizedHealth);
+        }
+        else if (playerNumber == 2 && player2HPComponent != null)
+        {
+            // UpdateHPSlider メソッドを呼び出し、正規化されたHP値を渡す
+            player2HPComponent.UpdateHPSlider(normalizedHealth);
+        }
+        // 3人以上のプレイヤーが想定される場合、ここにelse ifを追加
+        
+        // Debug.Log($"[HUDManager] Player{playerNumber} HP updated: {normalizedHealth}");
+    }
+
+
     private void HandleMinimapCameraSpawned(int controlIndex, Camera minimapCamera)
     {
         if (controlIndex == 1)
@@ -151,29 +195,23 @@ public class HUDManager : MonoBehaviour
         // HUDの表示/非表示を切り替える
         if (Player1Stock != null) Player1Stock.SetActive(isPlaying);
         if (Player2Stock != null) Player2Stock.SetActive(isPlaying);
+        
+        // 💡 追加: HP表示の表示/非表示を切り替える
+        if (player1HP != null) player1HP.SetActive(isPlaying);
+        if (player2HP != null) player2HP.SetActive(isPlaying);
 
-        // 💡 修正点: MinimapImage のルートオブジェクトの表示/非表示を切り替える
+        // MinimapImage のルートオブジェクトの表示/非表示を切り替える
         if (minimapImageRoot != null) minimapImageRoot.SetActive(isPlaying);
         
         // プレイ中のみミニマップカメラを有効化/無効化
-        // 💡 修正/確認: ミニマップに使用するのは player1Camera のみ
         if (player1Camera != null)
         {
             player1Camera.gameObject.SetActive(isPlaying); 
-            
-            if (isPlaying)
-            {
-                Debug.Log($"[HUDManager] 📸 Player1 Cameraをアクティブ化しました。");
-            }
-            else
-            {
-                Debug.Log($"[HUDManager] 📸 Player1 Cameraを非アクティブ化しました。");
-            }
         }
-        // 💡 追加: プレイヤー2のカメラは常に非アクティブにしておく
+        
         if (player2Camera != null)
         {
-            // 常に非アクティブ、または RoundPlaying のときのみ無効化（必要に応じて）
+            // プレイヤー2のカメラはここでは常に非アクティブにしておく
             player2Camera.gameObject.SetActive(false); 
         }
 
@@ -186,6 +224,7 @@ public class HUDManager : MonoBehaviour
     private void HandleWeaponStockChanged(int controlIndex, WeaponType type, WeaponStockData stockData) 
     {
         // プレイヤーインデックスに基づき、ターゲットの HUD コンポーネントを選択
+        // ⚠ 注意: ここでは ControlIndex (入力インデックス) を使用
         PlayerStock target = controlIndex == 1 ? player1StockComponent : player2StockComponent;
         if (target == null || stockData == null) return;
 

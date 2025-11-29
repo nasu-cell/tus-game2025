@@ -21,10 +21,15 @@ namespace Tanks.Complete
 
         private TankMovement m_Movement;
         private TankShooting m_Shooting;
+        // 💡 追加: TankHealth コンポーネントへの参照
+        private TankHealth m_Health; 
         private GameObject m_CanvasGameObject;
         private TankAI m_AI;
         private InputUser m_InputUser;
         private GameManager m_GameManager;
+
+        // 💡 修正点 1: HPの変化を受け取るイベントを追加 (プレイヤー番号と正規化HPを引数とする)
+        public event Action<int, float> OnHealthChanged;
 
         // 💡 修正点: イベントの引数に ControlIndex (int) を追加
         public event Action<int, Camera> OnMinimapCameraSpawned; 
@@ -46,6 +51,8 @@ namespace Tanks.Complete
 
             m_Movement = m_Instance.GetComponent<TankMovement>();
             m_Shooting = m_Instance.GetComponent<TankShooting>();
+            // 💡 追加: TankHealth コンポーネントを取得
+            m_Health = m_Instance.GetComponent<TankHealth>(); 
             m_AI = m_Instance.GetComponent<TankAI>();
             m_CanvasGameObject = m_Instance.GetComponentInChildren<Canvas>().gameObject;
 
@@ -85,8 +92,25 @@ namespace Tanks.Complete
             
             if (minimapCam != null)
             {
-                // 💡 修正: ControlIndex を引数に追加
+                // ControlIndex を引数に追加
                 OnMinimapCameraSpawned?.Invoke(ControlIndex, minimapCam); 
+            }
+
+            // =========================
+            // 💡 修正点 2: TankHealth.OnHealthChanged のイベント購読
+            // =========================
+            if (m_Health != null)
+            {
+                // TankHealth のイベントを購読し、受け取った正規化HP (normalizedHealth) を
+                // 自身のイベント (OnHealthChanged) にプレイヤー番号 (m_PlayerNumber) と共に再発火させる
+                m_Health.OnHealthChanged += (normalizedHealth) =>
+                {
+                    OnHealthChanged?.Invoke(m_PlayerNumber, normalizedHealth);
+                };
+            }
+            else
+            {
+                Debug.LogWarning($"TankManager {m_PlayerNumber} の戦車インスタンスに TankHealth コンポーネントが見つかりません。");
             }
 
             // =========================
