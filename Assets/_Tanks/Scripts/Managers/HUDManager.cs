@@ -10,11 +10,17 @@ public class HUDManager : MonoBehaviour
     [SerializeField] private GameObject Player2Stock;
     [SerializeField] private GameManager gameManager;
     
+    // 💡 修正: 勝利数表示を Player 3 まで拡張
+    [Header("Win Count Display")]
+    [SerializeField] private GameObject player1WinCount; 
+    [SerializeField] private GameObject player2WinCount;
+    [SerializeField] private GameObject player3WinCount; // 🏆 追加
+    
     // 💡 追加: HP表示
     [Header("HP Display")]
     [SerializeField] private GameObject player1HP; 
     [SerializeField] private GameObject player2HP; 
-
+    
     // ミニマップ設定
     [Header("Minimap Settings")]
     [SerializeField] private Camera player1Camera; 
@@ -23,6 +29,12 @@ public class HUDManager : MonoBehaviour
 
     private PlayerStock player1StockComponent;
     private PlayerStock player2StockComponent;
+    
+    // 💡 修正: PlayerWinCount コンポーネントへの参照を Player 3 まで拡張
+    private PlayerWinCount player1WinCountComponent;
+    private PlayerWinCount player2WinCountComponent;
+    private PlayerWinCount player3WinCountComponent; // 🏆 追加
+    
     // 💡 追加: PlayerHP コンポーネントへの参照
     private PlayerHP player1HPComponent;
     private PlayerHP player2HPComponent;
@@ -32,7 +44,6 @@ public class HUDManager : MonoBehaviour
         // 💡 修正点: 全戦車プレハブの子カメラを非アクティブにする処理
         if (gameManager != null)
         {
-            // GameManager の m_Tank{i}Prefab を格納する配列
             GameObject[] tankPrefabs = new GameObject[]
             {
                 gameManager.m_Tank1Prefab,
@@ -41,18 +52,15 @@ public class HUDManager : MonoBehaviour
                 gameManager.m_Tank4Prefab
             };
             
-            // 全ての戦車プレハブについて処理
             for (int i = 0; i < tankPrefabs.Length; i++)
             {
                 GameObject tankPrefab = tankPrefabs[i];
                 if (tankPrefab != null)
                 {
-                    // 子オブジェクトにある Camera コンポーネントを取得（非アクティブなものも含む）
                     Camera prefabCam = tankPrefab.GetComponentInChildren<Camera>(true);
                     
                     if (prefabCam != null)
                     {
-                        // 取得した Camera コンポーネントを持つ GameObject を非アクティブにする
                         prefabCam.gameObject.SetActive(false);
                     }
                 }
@@ -64,6 +72,11 @@ public class HUDManager : MonoBehaviour
         // HUDの在庫表示を最初非表示
         if (Player1Stock != null) Player1Stock.SetActive(false);
         if (Player2Stock != null) Player2Stock.SetActive(false);
+        
+        // 🏆 修正: 勝利数表示を最初非表示
+        if (player1WinCount != null) player1WinCount.SetActive(false);
+        if (player2WinCount != null) player2WinCount.SetActive(false);
+        if (player3WinCount != null) player3WinCount.SetActive(false); // 🏆 追加
         
         // 💡 追加: HP表示を最初非表示
         if (player1HP != null) player1HP.SetActive(false);
@@ -82,6 +95,14 @@ public class HUDManager : MonoBehaviour
             player1StockComponent = Player1Stock.GetComponent<PlayerStock>();
         if (Player2Stock != null)
             player2StockComponent = Player2Stock.GetComponent<PlayerStock>();
+
+        // 🏆 修正: PlayerWinCountコンポーネント取得
+        if (player1WinCount != null)
+            player1WinCountComponent = player1WinCount.GetComponent<PlayerWinCount>();
+        if (player2WinCount != null)
+            player2WinCountComponent = player2WinCount.GetComponent<PlayerWinCount>();
+        if (player3WinCount != null) // 🏆 追加
+            player3WinCountComponent = player3WinCount.GetComponent<PlayerWinCount>();
 
         // 💡 追加: PlayerHPコンポーネント取得
         if (player1HP != null)
@@ -103,6 +124,9 @@ public class HUDManager : MonoBehaviour
                     
                     // 💡 追加: TankManager のイベント購読 (HP変更)
                     tank.OnHealthChanged += HandlePlayerHPChanged;
+                    
+                    // 💡 追加: TankManager のイベント購読 (勝利数変更)
+                    tank.OnWinCountChanged += HandlePlayerWinCountChanged;
                     
                     // 修正: TankManager のカメラスポーンイベントを購読
                     tank.OnMinimapCameraSpawned += HandleMinimapCameraSpawned;
@@ -131,11 +155,41 @@ public class HUDManager : MonoBehaviour
                     // 💡 追加: 購読解除 (HP変更)
                     tank.OnHealthChanged -= HandlePlayerHPChanged;
                     
+                    // 💡 追加: 購読解除 (勝利数変更)
+                    tank.OnWinCountChanged -= HandlePlayerWinCountChanged;
+                    
                     // 修正: 購読解除
                     tank.OnMinimapCameraSpawned -= HandleMinimapCameraSpawned;
                 }
             }
         }
+    }
+    
+    // ====================================
+    // 🏆 修正: 勝利数変更ハンドラメソッド (Player 3 対応)
+    // ====================================
+    /// <summary>
+    /// プレイヤー番号とラウンド勝利数を受け取り、対応する PlayerWinCount コンポーネントを更新します。
+    /// </summary>
+    /// <param name="playerNumber">勝利数が変更されたプレイヤーの番号 (1, 2, 3...)</param>
+    /// <param name="winCount">現在の勝利数</param>
+    private void HandlePlayerWinCountChanged(int playerNumber, int winCount)
+    {
+        // プレイヤー番号に基づき、ターゲットの PlayerWinCount コンポーネントを選択
+        if (playerNumber == 1 && player1WinCountComponent != null)
+        {
+            player1WinCountComponent.UpdateWinCount(winCount);
+        }
+        else if (playerNumber == 2 && player2WinCountComponent != null)
+        {
+            player2WinCountComponent.UpdateWinCount(winCount);
+        }
+        else if (playerNumber == 3 && player3WinCountComponent != null) // 🏆 追加
+        {
+            player3WinCountComponent.UpdateWinCount(winCount);
+        }
+        
+        // Debug.Log($"[HUDManager] Player{playerNumber} Win Count updated: {winCount}");
     }
 
     // 💡 追加: HP変更ハンドラメソッド
@@ -153,9 +207,7 @@ public class HUDManager : MonoBehaviour
             // UpdateHPSlider メソッドを呼び出し、正規化されたHP値を渡す
             player2HPComponent.UpdateHPSlider(normalizedHealth);
         }
-        // 3人以上のプレイヤーが想定される場合、ここにelse ifを追加
-        
-        // Debug.Log($"[HUDManager] Player{playerNumber} HP updated: {normalizedHealth}");
+        // Player 3 以降の HP 表示は現在のコードでは省略
     }
 
 
@@ -167,7 +219,6 @@ public class HUDManager : MonoBehaviour
             if (player1Camera == null)
             {
                 player1Camera = minimapCamera;
-                Debug.Log("[HUDManager] 🔗 実行時に Player 1 Minimap Camera を取得しました。");
                 
                 // 取得直後は、RoundPlaying状態になるまで無効にしておく
                 player1Camera.gameObject.SetActive(false);
@@ -179,12 +230,12 @@ public class HUDManager : MonoBehaviour
             if (player2Camera == null)
             {
                 player2Camera = minimapCamera;
-                Debug.Log("[HUDManager] 🔗 実行時に Player 2 Minimap Camera を取得しました。");
                 
                 // 取得直後は、RoundPlaying状態になるまで無効にしておく
                 player2Camera.gameObject.SetActive(false);
             }
         }
+        // Player 3 以降の MinimapCamera のロジックは現在のコードでは省略
     }
 
     private void HandleGameStateChanged(GameManager.GameLoopState newState)
@@ -195,6 +246,11 @@ public class HUDManager : MonoBehaviour
         // HUDの表示/非表示を切り替える
         if (Player1Stock != null) Player1Stock.SetActive(isPlaying);
         if (Player2Stock != null) Player2Stock.SetActive(isPlaying);
+        
+        // 🏆 修正: 勝利数表示の表示/非表示を切り替える
+        if (player1WinCount != null) player1WinCount.SetActive(isPlaying);
+        if (player2WinCount != null) player2WinCount.SetActive(isPlaying);
+        if (player3WinCount != null) player3WinCount.SetActive(isPlaying); // 🏆 追加
         
         // 💡 追加: HP表示の表示/非表示を切り替える
         if (player1HP != null) player1HP.SetActive(isPlaying);

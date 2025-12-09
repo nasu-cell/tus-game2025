@@ -52,12 +52,15 @@ namespace Tanks.Complete
         public TankManager[] m_SpawnPoints;
 
         private GameState m_CurrentState;
-        private GameLoopState m_CurrentLoopState;   // 現在のラウンド状態を保持
+        private GameLoopState m_CurrentLoopState;    // 現在のラウンド状態を保持
 
         // ==============================
         // 状態変更イベント
         // ==============================
         public event Action<GameLoopState> OnGameStateChanged;
+
+        // 💡 追加: プレイヤー番号(int)と勝利数(int)を引数に持つイベント
+        public event Action<int, int> OnRoundWinnerChanged; 
 
         private int m_RoundNumber;
         private WaitForSeconds m_StartWait;
@@ -217,9 +220,9 @@ namespace Tanks.Complete
 
                     if (turretName == "TankTurret.001")
                     {
-                        // 🚨 修正箇所: X軸に180度を加算 (または Y軸に 180度を加算) して反転を打ち消す
-                        // TankTurret.001 のローカル X=180 の影響をここで相殺させるために、X軸に180度を設定
-                        // これにより、rotOffsetAdjustment が (180, Y, 0) となる
+                        // 🚨 修正箇所: X軸に180度を加算 (または Y軸に 180度を加算) して反転を打ち消す
+                        // TankTurret.001 のローカル X=180 の影響をここで相殺させるために、X軸に180度を設定
+                        // これにより、rotOffsetAdjustment が (180, Y, 0) となる
                         rotOffsetAdjustment.x = 180f;
                         rotOffsetAdjustment.y = 360f;
                     }
@@ -229,7 +232,8 @@ namespace Tanks.Complete
                 }
                 else
                 {
-                    Debug.LogError("[GameManager] プレイヤー1の戦車が見つかりませんでした。");
+                    m_TPSCameraControl.SetTarget(targetTransform);
+                    m_TPSCameraControl.AdjustRotOffset(rotOffsetAdjustment);
                 }
             }
         }
@@ -269,7 +273,7 @@ namespace Tanks.Complete
             if (m_CurrentLoopState != newState)
             {
                 m_CurrentLoopState = newState;
-                OnGameStateChanged?.Invoke(newState);   // 状態変更イベント発火
+                OnGameStateChanged?.Invoke(newState);    // 状態変更イベント発火
                 Debug.Log($"[GameManager] Game state changed to: {newState}");
             }
         }
@@ -279,6 +283,9 @@ namespace Tanks.Complete
             // 俯瞰視点の初期化処理を削除
             ResetAllTanks();
             DisableTankControl();
+
+            // 💡 【実行】すべての戦車のリソースをリセット
+            ResetAllTankResources();
 
             if (m_TPSCameraControl != null)
             {
@@ -311,7 +318,11 @@ namespace Tanks.Complete
             m_RoundWinner = GetRoundWinner();
 
             if (m_RoundWinner != null)
+            {
                 m_RoundWinner.m_Wins++;
+                // 💡 修正: OnRoundWinnerChanged イベントの発火
+                OnRoundWinnerChanged?.Invoke(m_RoundWinner.m_PlayerNumber, m_RoundWinner.m_Wins); 
+            }
 
             m_GameWinner = GetGameWinner();
 
@@ -392,6 +403,16 @@ namespace Tanks.Complete
             for (int i = 0; i < m_PlayerCount; i++)
             {
                 m_SpawnPoints[i].Reset();
+            }
+        }
+
+        // 💡 【実行】すべての戦車のリソース（砲弾、地雷、HP）をリセットするメソッド
+        private void ResetAllTankResources()
+        {
+            for (int i = 0; i < m_PlayerCount; i++)
+            {
+                // TankManagerで定義されたリソースリセットメソッドを呼び出す
+                m_SpawnPoints[i].ResetResources();
             }
         }
 

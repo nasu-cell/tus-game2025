@@ -60,7 +60,18 @@ namespace Tanks.Complete
                 Destroy(m_ExplosionParticles.gameObject);
         }
 
+        // 💡 修正点 3: OnEnableでReset()を呼び出すように変更
         private void OnEnable()
+        {
+            // When the tank is enabled, reset the tank's health and state using the dedicated Reset method.
+            Reset(); 
+        }
+
+        // 💡 修正点 4: TankManagerから呼ばれるための public Reset() メソッドを実装
+        /// <summary>
+        /// 戦車のヘルス、デッドフラグ、シールド、無敵タイマーを初期状態にリセットします。
+        /// </summary>
+        public void Reset()
         {
             // When the tank is enabled, reset the tank's health and whether or not it's dead.
             m_CurrentHealth = m_StartingHealth;
@@ -73,7 +84,7 @@ namespace Tanks.Complete
             SetRenderersEnabled(true);
 
             // Update the health slider's value and color.
-            // 💡 修正: HPリセット時にUI更新とイベント発火
+            // HPリセット時にUI更新とイベント発火
             SetHealthUI();
         }
 

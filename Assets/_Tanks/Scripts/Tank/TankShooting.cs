@@ -212,6 +212,39 @@ namespace Tanks.Complete
                 Fire();
             }
         }
+        
+        // =========================
+        // 💡 【追加】毎ラウンドのリソースリセットメソッド
+        // =========================
+        public void ResetResources()
+        {
+            // 1. 砲弾と地雷のストックを初期値に戻す
+            if (m_WeaponStockData != null)
+            {
+                m_WeaponStockData.InitializeQuantity();
+                OnShellStockChanged?.Invoke(m_WeaponStockData.CurrentQuantity); // UI更新のためにイベント発火
+            }
+            if (m_MineStockData != null)
+            {
+                m_MineStockData.InitializeQuantity();
+                OnMineStockChanged?.Invoke(m_MineStockData.CurrentQuantity); // UI更新のためにイベント発火
+            }
+            
+            // 2. 発射チャージ状態をリセット
+            m_CurrentLaunchForce = m_MinLaunchForce;
+            m_AimSlider.value = m_MinLaunchForce;
+            m_Fired = false;
+            m_ChargingForward = true;
+            m_ShotCooldownTimer = 0.0f; // クールダウンもリセット
+
+            // 3. 特殊弾効果をリセット
+            m_UsingSpecialShell = false;
+            m_SpecialDamageMultiplier = 1f;
+            m_SpecialShellTimer = 0f;
+            
+            Debug.Log($"{gameObject.name} の武器ストックとチャージ状態をリセットしました。");
+        }
+
         // =========================
         // デバッグ用: 現在の砲弾数・地雷数をログに表示
         // =========================

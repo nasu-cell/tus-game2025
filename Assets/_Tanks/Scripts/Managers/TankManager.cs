@@ -21,12 +21,14 @@ namespace Tanks.Complete
 
         private TankMovement m_Movement;
         private TankShooting m_Shooting;
-        // 💡 追加: TankHealth コンポーネントへの参照
         private TankHealth m_Health; 
         private GameObject m_CanvasGameObject;
         private TankAI m_AI;
         private InputUser m_InputUser;
         private GameManager m_GameManager;
+
+        // 💡 追加: プレイヤー番号(int)と勝利数(int)を引数に持つイベント
+        public event Action<int, int> OnWinCountChanged; 
 
         // 💡 修正点 1: HPの変化を受け取るイベントを追加 (プレイヤー番号と正規化HPを引数とする)
         public event Action<int, float> OnHealthChanged;
@@ -51,7 +53,6 @@ namespace Tanks.Complete
 
             m_Movement = m_Instance.GetComponent<TankMovement>();
             m_Shooting = m_Instance.GetComponent<TankShooting>();
-            // 💡 追加: TankHealth コンポーネントを取得
             m_Health = m_Instance.GetComponent<TankHealth>(); 
             m_AI = m_Instance.GetComponent<TankAI>();
             m_CanvasGameObject = m_Instance.GetComponentInChildren<Canvas>().gameObject;
@@ -101,8 +102,6 @@ namespace Tanks.Complete
             // =========================
             if (m_Health != null)
             {
-                // TankHealth のイベントを購読し、受け取った正規化HP (normalizedHealth) を
-                // 自身のイベント (OnHealthChanged) にプレイヤー番号 (m_PlayerNumber) と共に再発火させる
                 m_Health.OnHealthChanged += (normalizedHealth) =>
                 {
                     OnHealthChanged?.Invoke(m_PlayerNumber, normalizedHealth);
@@ -114,6 +113,26 @@ namespace Tanks.Complete
             }
 
             // =========================
+            // 💡 追加: GameManager.OnRoundWinnerChanged の購読
+            // =========================
+            if (m_GameManager != null)
+            {
+                // GameManagerからの勝利数変更イベントを購読し、受け取った値を再発火させる
+                m_GameManager.OnRoundWinnerChanged += (playerNumber, winCount) =>
+                {
+                    // 勝利したプレイヤー番号とこのTankManagerのプレイヤー番号が一致する場合のみ処理
+                    if (playerNumber == m_PlayerNumber)
+                    {
+                        OnWinCountChanged?.Invoke(playerNumber, winCount);
+                    }
+                };
+                
+                // 💡 追加: 初期状態（勝利数0）を一度通知する
+                OnWinCountChanged?.Invoke(m_PlayerNumber, m_Wins);
+            }
+
+
+            // =========================
             // TankShooting のイベント登録
             // =========================
 
@@ -122,7 +141,8 @@ namespace Tanks.Complete
             {
                 // MODIFIED: WeaponType を追加
                 OnWeaponStockChangedEvent?.Invoke(ControlIndex, WeaponType.Shell, m_Shooting.WeaponStockData);
-            };
+            }
+            ;
 
             // 🔴 地雷の所持数が変わったとき
             m_Shooting.OnMineStockChanged += (mineCount) =>
@@ -135,6 +155,23 @@ namespace Tanks.Complete
             m_Shooting.OnMinePlaced += OnMinePlacedHandler;
             Debug.Log($"{m_PlayerNumber}: ControlIndex={ControlIndex}");
 
+        }
+
+        // 💡 【確定】毎ラウンドのリソースリセットメソッド
+        public void ResetResources()
+        {
+            // TankShooting にリソースのリセットを依頼する
+            if (m_Shooting != null)
+            {
+                m_Shooting.ResetResources(); 
+            }
+            
+            // Health のリセットもここで行う (TankHealth.cs に Reset() が必要)
+            if (m_Health != null)
+            {
+                // TankHealth.cs に public void Reset() メソッドを追加したのでエラーは解消されます
+                m_Health.Reset(); 
+            }
         }
 
         // =========================
