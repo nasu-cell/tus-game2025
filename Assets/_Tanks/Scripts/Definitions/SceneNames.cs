@@ -5,5 +5,7 @@ public static class SceneNames
     public static readonly string TitleScene = "TitleScene";
     public static readonly string HomeScene = "HomeScene";
     public static readonly string Demo_Game_Desert = "Demo_Game_Desert";
+     
+    public static readonly string RobyScene = "RobyScene";
 }
 

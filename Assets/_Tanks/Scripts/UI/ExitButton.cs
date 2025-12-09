@@ -2,21 +2,22 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class VersusPlayer : MonoBehaviour
+public class ExitButton : MonoBehaviour
 {
     // Unityエディタ上でボタンを紐づけできるようにする
-    [SerializeField] private Button versusPlayer;
+    [SerializeField] private Button exitbutton;
 
     private void Start()
     {
         // ボタンがクリックされたときに OnClicked メソッドを実行
-        versusPlayer.onClick.AddListener(OnClicked);
+        exitbutton.onClick.AddListener(OnClicked);
     }
 
     // ボタンクリック時の処理
     private void OnClicked()
     {
         // SceneNames クラスを使用してゲーム画面に遷移
-        SceneManager.LoadScene(SceneNames.RobyScene);
+        SceneManager.LoadScene(SceneNames.HomeScene);
     }
 }
+
