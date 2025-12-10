@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1706.6667
     height: 976
   m_ShowMode: 4
-  m_Title: Game
+  m_Title: Scene
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -120,7 +120,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 168
+  controlID: 138
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -146,7 +146,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 17
+  controlID: 25
   draggingID: 0
 --- !u!114 &7
 MonoBehaviour:
@@ -351,7 +351,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/_Tanks/Prefabs/UI
+    - Assets/_Tanks/Tutorial_Demo/Demo_Scenes
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -361,16 +361,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 49
   m_LastFolders:
-  - Assets/_Tanks/Prefabs/UI
+  - Assets/_Tanks/Tutorial_Demo/Demo_Scenes
   m_LastFoldersGridSize: 49
   m_LastProjectPath: "C:\\Users\\shii1\\OneDrive\\\u30C7\u30B9\u30AF\u30C8\u30C3\u30D7\\UnityProject\\tus-game2025"
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 32de0000
-    m_LastClickedID: 56882
-    m_ExpandedIDs: 0000000044c900003cca000046ca00004cca000064ca000000ca9a3b
+    scrollPos: {x: 0, y: 248.66663}
+    m_SelectedIDs: cabe0000
+    m_LastClickedID: 48842
+    m_ExpandedIDs: 000000004cb200009cb20000a6b20000bcb20000beb20000c0b2000016b3000018b3000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -399,7 +399,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: aceb0000
     m_LastClickedID: 60332
-    m_ExpandedIDs: 0000000044c90000
+    m_ExpandedIDs: 000000004cb20000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -994,9 +994,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 604.25, y: 300.75, z: 0}
+    m_Target: {x: 628.688, y: 349.6985, z: 239.8894}
     speed: 2
-    m_Value: {x: 604.25, y: 300.75, z: 0}
+    m_Value: {x: 628.688, y: 349.6985, z: 239.8894}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1042,13 +1042,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.15667377, y: 0.22989729, z: -0.037531234, w: -0.959801}
+    m_Target: {x: 0.021180402, y: -0.028892497, z: -0.0006157596, w: -0.99937314}
     speed: 2
-    m_Value: {x: -0.15667173, y: 0.22989431, z: -0.037530746, w: -0.95978856}
+    m_Value: {x: 0.021179454, y: -0.029891433, z: -0.00063693064, w: -0.99932855}
   m_Size:
-    m_Target: 674.95825
+    m_Target: 498.19424
     speed: 2
-    m_Value: 674.95825
+    m_Value: 521.6694
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1222,9 +1222,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 42de0000
-      m_LastClickedID: 0
-      m_ExpandedIDs: 42a4fffffeaaffff5cabffffb6abffff14acffff6eacffff0aadffff72afffff8cb3ffffccb8ffff92bfffff4ec1ffffeac2ffff38c4ffff8cc5ffff7ec7ffff2cc8ffff2ac9fffffec9ffffbacbffff82ccffff50d0ffffa4d2ffff76d5ffff56d6ffffeafaffff4ecb000072cb00007acc0000eacd00000ece000084ce0000a8ce0000ccce0000dece000058cf000074cf0000a0cf0000b2cf0000f4dd0000
+      m_SelectedIDs: aac10000
+      m_LastClickedID: 49578
+      m_ExpandedIDs: 2e70ffff0072ffff1873fffff674ffffb877ffff14acffff10d8ffff12d9ffffe0daffffdedbffffeafafffff6ae000046af000008bf00009ebf00003ec0000002c100002ec10000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
