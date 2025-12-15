@@ -9,24 +9,19 @@ namespace Tanks.Complete
 {
     public class GameManager : MonoBehaviour
     {
-        // ==============================
-        // ゲーム状態管理用の列挙体
-        // ==============================
         public enum GameLoopState
         {
-            RoundStarting,  // ゲームの開始処理中
-            RoundPlaying,   // プレイ中
-            RoundEnding     // 終了処理中
+            RoundStarting,
+            RoundPlaying,
+            RoundEnding
         }
 
-        // Which state the game is currently in
         public enum GameState
         {
             MainMenu,
             Game
         }
 
-        // Data about the selected tanks passed from the menu to the GameManager
         public class PlayerData
         {
             public bool IsComputer;
@@ -35,11 +30,10 @@ namespace Tanks.Complete
             public int ControlIndex;
         }
 
-        public int m_NumRoundsToWin = 5;
-        public float m_StartDelay = 3f;
-        public float m_EndDelay = 3f;
+        public int m_NumRoundsToWin;
+        public float m_StartDelay;
+        public float m_EndDelay;
 
-        // CameraRigオブジェクトのTPSCameraControlクラスの参照を保持するフィールド
         public TPSCameraControl m_TPSCameraControl;
 
         [Header("Tanks Prefabs")]
@@ -48,29 +42,25 @@ namespace Tanks.Complete
         public GameObject m_Tank3Prefab;
         public GameObject m_Tank4Prefab;
 
-        [FormerlySerializedAs("m_Tanks")]
         public TankManager[] m_SpawnPoints;
 
         private GameState m_CurrentState;
-        private GameLoopState m_CurrentLoopState;    // 現在のラウンド状態を保持
+        private GameLoopState m_CurrentLoopState;
 
-        // ==============================
-        // 状態変更イベント
-        // ==============================
         public event Action<GameLoopState> OnGameStateChanged;
-
-        // 💡 追加: プレイヤー番号(int)と勝利数(int)を引数に持つイベント
-        public event Action<int, int> OnRoundWinnerChanged; 
+        public event Action<int, int> OnRoundWinnerChanged;
 
         private int m_RoundNumber;
         private WaitForSeconds m_StartWait;
         private WaitForSeconds m_EndWait;
+
         private TankManager m_RoundWinner;
         private TankManager m_GameWinner;
 
         private PlayerData[] m_TankData;
         private int m_PlayerCount = 0;
         private TextMeshProUGUI m_TitleText;
+
 
         private void Start()
         {
@@ -107,18 +97,14 @@ namespace Tanks.Complete
         {
             m_CurrentState = newState;
 
-            switch (m_CurrentState)
+            if (newState == GameState.Game)
             {
-                case GameState.Game:
-                    GameStart();
-                    break;
+                GameStart();
             }
         }
 
         public void StartGame(PlayerData[] playerData)
         {
-            // ControlIndex の昇順で配列をソートする
-            // (i.e. ControlIndex 1, 2, 3... の順になるように並べ替える)
             Array.Sort(playerData, (a, b) => a.ControlIndex.CompareTo(b.ControlIndex));
             m_TankData = playerData;
             m_PlayerCount = m_TankData.Length;
@@ -132,7 +118,8 @@ namespace Tanks.Complete
                 var playerData = m_TankData[i];
 
                 m_SpawnPoints[i].m_Instance =
-                    Instantiate(playerData.UsedPrefab, m_SpawnPoints[i].m_SpawnPoint.position, m_SpawnPoints[i].m_SpawnPoint.rotation) as GameObject;
+                    Instantiate(playerData.UsedPrefab, m_SpawnPoints[i].m_SpawnPoint.position,
+                    m_SpawnPoints[i].m_SpawnPoint.rotation) as GameObject;
 
                 var mov = m_SpawnPoints[i].m_Instance.GetComponent<TankMovement>();
                 mov.m_IsComputerControlled = false;
@@ -145,24 +132,19 @@ namespace Tanks.Complete
 
             foreach (var tank in m_SpawnPoints)
             {
-                if (tank.m_Instance == null)
-                    continue;
-
-                tank.Setup(this);
+                if (tank.m_Instance != null)
+                    tank.Setup(this);
             }
         }
 
         private void SetCameraTargets()
         {
             if (m_PlayerCount <= 0 || m_TPSCameraControl == null)
-            {
                 return;
-            }
 
             Transform targetTransform = null;
             TankManager playerOneTank = null;
 
-            // プレイヤー1のタンクを ControlIndex (1) で検索する
             for (int i = 0; i < m_PlayerCount; i++)
             {
                 if (m_SpawnPoints[i].ControlIndex == 1)
@@ -179,54 +161,32 @@ namespace Tanks.Complete
 
                 Vector3 rotOffsetAdjustment = Vector3.zero;
 
-                // 2階層下の砲塔を検索するロジック
                 Transform modelRoot = null;
                 Transform turret = null;
-                string turretName = string.Empty; // どの砲塔が設定されたか記録
 
-                // 1. 中間ノードを検索
                 modelRoot = playerTankInstance.Find("Tank_Alternative_Model");
                 if (modelRoot == null)
-                {
                     modelRoot = playerTankInstance.Find("Tank_Heavy_Model");
-                }
 
                 if (modelRoot != null)
                 {
-                    // 2. 中間ノードから砲塔を検索
                     turret = modelRoot.Find("TankTurret.001");
-                    if (turret != null)
-                    {
-                        turretName = "TankTurret.001";
-                    }
-                    else
-                    {
+                    if (turret == null)
                         turret = modelRoot.Find("TankHeavyTurret");
-                        if (turret != null)
-                        {
-                            turretName = "TankHeavyTurret";
-                        }
-                    }
                 }
 
-                // 3. 砲塔が見つかった場合の処理
                 if (turret != null)
                 {
-                    // ターゲットを砲塔にする
                     targetTransform = turret;
 
-                    // ローカル回転を調整量として取得
                     rotOffsetAdjustment = new Vector3(turret.localEulerAngles.x, turret.localEulerAngles.y, 0);
 
-                    if (turretName == "TankTurret.001")
+                    if (turret.name == "TankTurret.001")
                     {
-                        // 🚨 修正箇所: X軸に180度を加算 (または Y軸に 180度を加算) して反転を打ち消す
-                        // TankTurret.001 のローカル X=180 の影響をここで相殺させるために、X軸に180度を設定
-                        // これにより、rotOffsetAdjustment が (180, Y, 0) となる
                         rotOffsetAdjustment.x = 180f;
                         rotOffsetAdjustment.y = 360f;
                     }
-                    // TPSCameraControl のターゲットと回転オフセットを更新
+
                     m_TPSCameraControl.SetTarget(targetTransform);
                     m_TPSCameraControl.AdjustRotOffset(rotOffsetAdjustment);
                 }
@@ -238,60 +198,53 @@ namespace Tanks.Complete
             }
         }
 
-        // ==============================
-        // ゲームループ本体
-        // ==============================
+
+        // ============================================
+        //                GAME LOOP
+        // ============================================
         private IEnumerator GameLoop()
         {
-            // RoundStarting
             SetGameState(GameLoopState.RoundStarting);
             yield return StartCoroutine(RoundStarting());
 
-            // RoundPlaying
             SetGameState(GameLoopState.RoundPlaying);
             yield return StartCoroutine(RoundPlaying());
 
-            // RoundEnding
             SetGameState(GameLoopState.RoundEnding);
             yield return StartCoroutine(RoundEnding());
 
+            // 🎯【修正ポイント】ゲーム勝者が出たらロビーへ移動
             if (m_GameWinner != null)
             {
-                SceneManager.LoadScene(0);
+                // RoundEnding の m_EndWait では短いので、さらに 3 秒表示
+                yield return new WaitForSeconds(0.5f);
+
+                SceneManager.LoadScene(SceneNames.LobbyScene);
+                yield break;
             }
-            else
-            {
-                StartCoroutine(GameLoop());
-            }
+
+            // ゲーム続行
+            StartCoroutine(GameLoop());
         }
 
-        // ==============================
-        // 状態更新メソッド
-        // ==============================
+
         private void SetGameState(GameLoopState newState)
         {
             if (m_CurrentLoopState != newState)
             {
                 m_CurrentLoopState = newState;
-                OnGameStateChanged?.Invoke(newState);    // 状態変更イベント発火
-                Debug.Log($"[GameManager] Game state changed to: {newState}");
+                OnGameStateChanged?.Invoke(newState);
             }
         }
 
         private IEnumerator RoundStarting()
         {
-            // 俯瞰視点の初期化処理を削除
             ResetAllTanks();
             DisableTankControl();
-
-            // 💡 【実行】すべての戦車のリソースをリセット
             ResetAllTankResources();
 
             if (m_TPSCameraControl != null)
-            {
-                // TPSCameraControl の初期位置/回転設定メソッドを呼び出す
                 m_TPSCameraControl.SetStartPositionAndRotation();
-            }
 
             m_RoundNumber++;
             m_TitleText.text = "ROUND " + m_RoundNumber;
@@ -302,26 +255,22 @@ namespace Tanks.Complete
         private IEnumerator RoundPlaying()
         {
             EnableTankControl();
-            m_TitleText.text = string.Empty;
+            m_TitleText.text = "";
 
             while (!OneTankLeft())
-            {
                 yield return null;
-            }
         }
 
         private IEnumerator RoundEnding()
         {
             DisableTankControl();
 
-            m_RoundWinner = null;
             m_RoundWinner = GetRoundWinner();
 
             if (m_RoundWinner != null)
             {
                 m_RoundWinner.m_Wins++;
-                // 💡 修正: OnRoundWinnerChanged イベントの発火
-                OnRoundWinnerChanged?.Invoke(m_RoundWinner.m_PlayerNumber, m_RoundWinner.m_Wins); 
+                OnRoundWinnerChanged?.Invoke(m_RoundWinner.m_PlayerNumber, m_RoundWinner.m_Wins);
             }
 
             m_GameWinner = GetGameWinner();
@@ -340,7 +289,6 @@ namespace Tanks.Complete
                 if (m_SpawnPoints[i].m_Instance.activeSelf)
                     numTanksLeft++;
             }
-
             return numTanksLeft <= 1;
         }
 
@@ -351,14 +299,11 @@ namespace Tanks.Complete
             for (int i = 0; i < m_PlayerCount; i++)
             {
                 if (m_SpawnPoints[i].m_Instance.activeSelf)
-                {
                     lastAlive = m_SpawnPoints[i];
-                }
             }
 
             return lastAlive;
         }
-
 
         private TankManager GetGameWinner()
         {
@@ -370,66 +315,55 @@ namespace Tanks.Complete
             return null;
         }
 
-        // GameManager.cs - EndMessage() メソッド
 
+        // ============================================
+        //          ★ 修正版 EndMessage()
+        // ============================================
         private string EndMessage()
         {
             string message = "DRAW!";
 
-            // ラウンド勝者の表示
             if (m_RoundWinner != null)
-                // 💡 修正: ControlIndex ではなく m_PlayerNumber を使用
                 message = $"PLAYER {m_RoundWinner.m_PlayerNumber} WINS THE ROUND!";
 
             message += "\n\n\n\n";
 
-            // 全プレイヤーの勝利数表示
             for (int i = 0; i < m_PlayerCount; i++)
             {
-                // 💡 修正: ControlIndex ではなく m_PlayerNumber を使用
                 message += $"PLAYER {m_SpawnPoints[i].m_PlayerNumber}: {m_SpawnPoints[i].m_Wins} WINS\n";
             }
 
-            // ゲーム勝者の表示
             if (m_GameWinner != null)
-                // 💡 修正: ControlIndex ではなく m_PlayerNumber を使用
+            {
                 message = $"PLAYER {m_GameWinner.m_PlayerNumber} WINS THE GAME!";
+            }
 
             return message;
         }
 
+
         private void ResetAllTanks()
         {
             for (int i = 0; i < m_PlayerCount; i++)
-            {
                 m_SpawnPoints[i].Reset();
-            }
         }
 
-        // 💡 【実行】すべての戦車のリソース（砲弾、地雷、HP）をリセットするメソッド
         private void ResetAllTankResources()
         {
             for (int i = 0; i < m_PlayerCount; i++)
-            {
-                // TankManagerで定義されたリソースリセットメソッドを呼び出す
                 m_SpawnPoints[i].ResetResources();
-            }
         }
 
         private void EnableTankControl()
         {
             for (int i = 0; i < m_PlayerCount; i++)
-            {
                 m_SpawnPoints[i].EnableControl();
-            }
         }
 
         private void DisableTankControl()
         {
             for (int i = 0; i < m_PlayerCount; i++)
-            {
                 m_SpawnPoints[i].DisableControl();
-            }
         }
     }
 }

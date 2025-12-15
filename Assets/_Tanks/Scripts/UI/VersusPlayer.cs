@@ -17,6 +17,6 @@ public class VersusPlayer : MonoBehaviour
     private void OnClicked()
     {
         // SceneNames クラスを使用してゲーム画面に遷移
-        SceneManager.LoadScene(SceneNames.RobyScene);
+        SceneManager.LoadScene(SceneNames.LobbyScene);
     }
 }
