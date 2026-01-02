@@ -1,61 +1,96 @@
 using UnityEngine;
 using TMPro;
+using Unity.Netcode;
 
 public class LobbyManager : MonoBehaviour
 {
-    // === Inspectorで設定するUIコンポーネント ===
-    // 1. ReadyButtonの子のTextMeshPro (Ready/Cancelの表示切替用)
     public TextMeshProUGUI readyButtonText;
-    
-    // 2. プレイヤーの状態を表示するTextMeshPro (MyReadyの表示切替用)
     public TextMeshProUGUI myReadyText;
-    
-    // 3. 相手の状態を表示するTextMeshPro (今回のロジックでは変更しないが、管理用として)
-    public TextMeshProUGUI opponentReadyText; 
+    public TextMeshProUGUI opponentReadyText;
 
-    // === 内部の状態管理変数 ===
-    private bool isPlayerReady = false; 
+    private NetworkPlayerData localPlayer;
 
-    void Start()
+    private void Start()
     {
-        // ゲーム開始時の初期状態を設定する
-        // Start()時に isPlayerReady は false です
-        
+        // Player が Spawn されるまで待機して LocalPlayer を設定
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+
         readyButtonText.text = "READY";
         myReadyText.text = "Not Ready";
-        // opponentReadyText.text = "Not Ready"; // 必要に応じて
+        opponentReadyText.text = "Not Ready";
+
+        TrySetLocalPlayer();
     }
 
-    // ReadyButtonのOnClick()イベントから呼び出される関数
-    public void ToggleReadyState()
+    private void TrySetLocalPlayer()
     {
-        if (isPlayerReady == false)
+        // シーン内の NetworkPlayerData から自分のオーナーを探す
+        foreach (var player in FindObjectsOfType<NetworkPlayerData>())
         {
-            // === Not Ready -> Ready への切り替え ===
-            
-            // 1. 子オブジェクトの表示を "Ready" から "Cancel" に変更
-            readyButtonText.text = "CANCEL";
-            
-            // 2. MyReadyの表示を "Not Ready" から "Ready" に変更
-            myReadyText.text = "Ready";
-            
-            // 3. 状態を true にする
-            isPlayerReady = true;
+            if (player.IsOwner)
+            {
+                SetLocalPlayer(player);
+                break;
+            }
         }
-        else // isPlayerReady == true の時
+    }
+
+    public void SetLocalPlayer(NetworkPlayerData player)
+    {
+        localPlayer = player;
+        // 自分の Ready 状態を監視
+        localPlayer.IsReady.OnValueChanged += OnMyReadyChanged;
+
+        // 他プレイヤーの Ready 状態を監視
+        foreach (var other in FindObjectsOfType<NetworkPlayerData>())
         {
-            // === Ready -> Not Ready への切り替え ===
-            
-            // 1. 子オブジェクトの表示を "Cancel" から "Ready" に変更
-            readyButtonText.text = "READY";
-            
-            // 2. MyReadyの表示を "Ready" から "Not Ready" に変更
-            myReadyText.text = "Not Ready";
-            
-            // 3. 状態を false にする
-            isPlayerReady = false;
+            if (!other.IsOwner)
+                other.IsReady.OnValueChanged += OnOpponentReadyChanged;
         }
-        
-        Debug.Log("Player Ready State: " + isPlayerReady);
+    }
+
+    public void OnReadyButtonPressed()
+    {
+        if (localPlayer == null)
+        {
+            Debug.LogWarning("LocalPlayer がまだ設定されていません");
+            return;
+        }
+        localPlayer.ToggleReady();
+    }
+
+    private void OnMyReadyChanged(bool previousValue, bool newValue)
+    {
+        myReadyText.text = newValue ? "Ready" : "Not Ready";
+        readyButtonText.text = newValue ? "CANCEL" : "READY";
+    }
+
+    private void OnOpponentReadyChanged(bool previousValue, bool newValue)
+    {
+        opponentReadyText.text = newValue ? "Ready" : "Not Ready";
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        // Client が接続されたら再度 LocalPlayer を探す
+        TrySetLocalPlayer();
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        // 接続が切れたら必要に応じて UI をリセット
+    }
+
+    private void OnDestroy()
+    {
+        if (localPlayer != null)
+            localPlayer.IsReady.OnValueChanged -= OnMyReadyChanged;
+
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
     }
 }
